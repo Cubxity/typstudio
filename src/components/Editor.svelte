@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  // import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
   import type { editor as editorType } from "monaco-editor";
   import { invoke } from "@tauri-apps/api";
   import debounce from "lodash/debounce";
@@ -23,14 +22,15 @@
   const handleUpdateDebounce = debounce(handleUpdate, 100, { maxWait: 300 });
 
   onMount(async () => {
-    // const EditorWorker = await import("monaco-editor/esm/vs/editor/editor.worker?worker");
+    const EditorWorker = await import("monaco-editor/esm/vs/editor/editor.worker?worker");
     const monaco = await import("monaco-editor");
 
-    // self.MonacoEnvironment = {
-    //   getWorker: function(_moduleId: any, label: string) {
-    //     return new EditorWorker();
-    // }
-    // };
+    // @ts-ignore
+    self.MonacoEnvironment = {
+      getWorker: function(_moduleId: any, label: string) {
+        return new EditorWorker();
+      }
+    };
 
     editor = monaco.editor.create(divEl, {
       value: "",
