@@ -16,19 +16,19 @@
   const handleUpdate = () => {
     invoke("fs_update_file", {
       path,
-      content: editor.getModel().getValue()
+      content: editor.getModel()?.getValue()
     });
   };
   const handleUpdateDebounce = debounce(handleUpdate, 100, { maxWait: 300 });
 
   onMount(async () => {
     const EditorWorker = await import("monaco-editor/esm/vs/editor/editor.worker?worker");
-    const monaco = await import("monaco-editor");
+    const monaco = await import("../lib/editor/monaco");
 
     // @ts-ignore
     self.MonacoEnvironment = {
       getWorker: function(_moduleId: any, label: string) {
-        return new EditorWorker();
+        return new EditorWorker.default();
       }
     };
 
@@ -59,7 +59,7 @@
 
     invoke<FsReadResponse>("fs_read_file", { path })
       .then(res => {
-        editor.getModel().setValue(res.content);
+        editor.getModel()?.setValue(res.content);
       });
   };
 
