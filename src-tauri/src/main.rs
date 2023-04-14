@@ -21,10 +21,10 @@ fn main() {
         .on_menu_event(handle_menu_event)
         .manage(project_manager)
         .invoke_handler(tauri::generate_handler![
-            rpc::fs_list,
-            rpc::fs_read_file,
-            rpc::fs_update_file,
-            rpc::typst_render
+            rpc::commands::fs_list,
+            rpc::commands::fs_read_file,
+            rpc::commands::fs_update_file,
+            rpc::commands::typst_render
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

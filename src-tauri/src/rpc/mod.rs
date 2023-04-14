@@ -1,5 +1,4 @@
-mod commands;
-mod model;
+pub mod commands;
 
-pub use commands::*;
+mod model;
 pub use model::*;
