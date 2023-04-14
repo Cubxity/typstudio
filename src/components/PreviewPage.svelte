@@ -8,7 +8,6 @@
   let img: HTMLImageElement;
 
   const render = async (hash: string) => {
-
     console.log(`update: ${hash}`);
 
     // return

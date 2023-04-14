@@ -7,6 +7,7 @@
   import ICodeEditor = editorType.ICodeEditor;
   import IModelContentChangedEvent = editorType.IModelContentChangedEvent;
   import type { FsReadResponse } from "../lib/ipc";
+  import { initMonaco } from "../lib/editor/monaco.js";
 
   let divEl: HTMLDivElement;
   let editor: ICodeEditor;
@@ -23,7 +24,8 @@
 
   onMount(async () => {
     const EditorWorker = await import("monaco-editor/esm/vs/editor/editor.worker?worker");
-    const monaco = await import("../lib/editor/monaco");
+    const monaco = await import("monaco-editor");
+    await initMonaco();
 
     // @ts-ignore
     self.MonacoEnvironment = {
@@ -35,7 +37,6 @@
     editor = monaco.editor.create(divEl, {
       value: "",
       language: "typst",
-      theme: "vs-dark",
       lineHeight: 1.8,
       automaticLayout: true
     });
