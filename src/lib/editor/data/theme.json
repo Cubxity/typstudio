@@ -15,6 +15,10 @@
       "token": "string"
     },
     {
+      "foreground": "f1fa8c",
+      "token": "punctuation.definition.string.typst"
+    },
+    {
       "foreground": "bd93f9",
       "token": "constant.numeric"
     },
@@ -141,6 +145,23 @@
     {
       "foreground": "e6db74",
       "token": "markup.changed"
+    },
+    {
+      "foreground": "50fa7b",
+      "token": "markup.bold.typst"
+    },
+    {
+      "foreground": "50fa7b",
+      "token": "punctuation.definition.bold.typst"
+    },
+    {
+      "foreground": "50fa7b",
+      "token": "markup.italic.typst",
+      "fontStyle": "italic"
+    },
+    {
+      "foreground": "50fa7b",
+      "token": "punctuation.definition.italic.typst"
     },
     {
       "foreground": "bd93f9",
