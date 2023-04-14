@@ -7,7 +7,7 @@
   import ICodeEditor = editorType.ICodeEditor;
   import IModelContentChangedEvent = editorType.IModelContentChangedEvent;
   import type { FsReadResponse } from "../lib/ipc";
-  import { initMonaco } from "../lib/editor/monaco.js";
+  import { initMonaco } from "../lib/editor/monaco";
 
   let divEl: HTMLDivElement;
   let editor: ICodeEditor;
