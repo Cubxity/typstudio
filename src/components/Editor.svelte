@@ -25,7 +25,7 @@
   onMount(async () => {
     const EditorWorker = await import("monaco-editor/esm/vs/editor/editor.worker?worker");
     const monaco = await import("monaco-editor");
-    await initMonaco();
+    await initMonaco;
 
     // @ts-ignore
     self.MonacoEnvironment = {
