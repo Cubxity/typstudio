@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub enum RpcError {
+pub enum IPCError {
     Unknown,
     IOError,
 }

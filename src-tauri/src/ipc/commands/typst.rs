@@ -1,5 +1,5 @@
 use crate::project::ProjectManager;
-use crate::rpc::model::TypstRenderResponse;
+use crate::ipc::model::TypstRenderResponse;
 use base64::Engine;
 use std::sync::Arc;
 use tauri::Runtime;

@@ -6,7 +6,7 @@
 mod engine;
 mod menu;
 mod project;
-mod rpc;
+mod ipc;
 
 use crate::menu::handle_menu_event;
 use crate::project::ProjectManager;
@@ -21,10 +21,10 @@ fn main() {
         .on_menu_event(handle_menu_event)
         .manage(project_manager)
         .invoke_handler(tauri::generate_handler![
-            rpc::commands::fs_list,
-            rpc::commands::fs_read_file,
-            rpc::commands::fs_update_file,
-            rpc::commands::typst_render
+            ipc::commands::fs_list,
+            ipc::commands::fs_read_file,
+            ipc::commands::fs_update_file,
+            ipc::commands::typst_render
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

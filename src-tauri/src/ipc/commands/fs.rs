@@ -1,6 +1,6 @@
+use crate::ipc::model::{FileItem, FileType, FsListResponse, IPCError, TypstCompileEvent};
+use crate::ipc::FsReadResponse;
 use crate::project::ProjectManager;
-use crate::rpc::model::{FileItem, FileType, FsListResponse, RpcError, TypstCompileEvent};
-use crate::rpc::FsReadResponse;
 use siphasher::sip128::{Hasher128, SipHasher};
 use std::fs;
 use std::fs::File;
@@ -14,13 +14,13 @@ pub async fn fs_read_file<R: Runtime>(
     window: tauri::Window<R>,
     path: String,
     project_manager: tauri::State<'_, Arc<ProjectManager>>,
-) -> Result<FsReadResponse, RpcError> {
+) -> Result<FsReadResponse, IPCError> {
     if let Some(project) = project_manager.get_project(&window) {
         let p = project.root.join(path);
-        let res = fs::read_to_string(p).map_err(|_| RpcError::IOError)?;
+        let res = fs::read_to_string(p).map_err(|_| IPCError::IOError)?;
         return Ok(FsReadResponse { content: res });
     }
-    Err(RpcError::Unknown)
+    Err(IPCError::Unknown)
 }
 
 #[tauri::command]
@@ -75,12 +75,12 @@ pub async fn fs_list<R: Runtime>(
     window: tauri::Window<R>,
     project_manager: tauri::State<'_, Arc<ProjectManager>>,
     path: String,
-) -> Result<FsListResponse, RpcError> {
+) -> Result<FsListResponse, IPCError> {
     // TODO: Assure that path does not traverse above project's root directory
     if let Some(project) = project_manager.get_project(&window) {
         let path = project.root.join(path);
         println!("listing {:?}", path);
-        let list = fs::read_dir(path).map_err(|_| RpcError::IOError)?;
+        let list = fs::read_dir(path).map_err(|_| IPCError::IOError)?;
         let mut files: Vec<FileItem> = vec![];
         for entry in list {
             if let Ok(entry) = entry {
@@ -99,5 +99,5 @@ pub async fn fs_list<R: Runtime>(
 
         return Ok(FsListResponse { files });
     }
-    Err(RpcError::Unknown)
+    Err(IPCError::Unknown)
 }

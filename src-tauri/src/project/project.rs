@@ -1,5 +1,5 @@
 use crate::project::ProjectWorld;
-use crate::rpc::{ProjectChangeEvent, ProjectModel};
+use crate::ipc::{ProjectChangeEvent, ProjectModel};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
