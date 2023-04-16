@@ -75,6 +75,12 @@
   class={clsx("flex flex-col overflow-auto bg-neutral-700 p-4 gap-4", $$props.class)}
 >
   {#each Array(pages) as _, i}
-    <PreviewPage page={i} hash={hash} width={width * scale} height={height * scale} scale={scale} />
+    <PreviewPage
+      page={i}
+      hash={hash}
+      width={Math.floor(width * scale)}
+      height={Math.floor(height * scale)}
+      scale={scale}
+    />
   {/each}
 </div>

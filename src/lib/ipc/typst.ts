@@ -9,6 +9,8 @@ export interface TypstCompileEvent {
 
 export interface TypstRenderResponse {
   image: string;
+  width: number;
+  height: number;
 }
 
 export const render = (page: number, scale: number): Promise<TypstRenderResponse> =>

@@ -31,7 +31,7 @@
     // return
     const res: TypstRenderResponse = await render(page, updateScale);
 
-    const img = new Image(width, height);
+    const img = new Image(res.width, res.height);
     img.src = "data:image/png;base64," + res.image;
     img.onload = () => {
       // Prevent out-of-order rendering

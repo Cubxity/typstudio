@@ -20,7 +20,11 @@ pub async fn typst_render<R: Runtime>(
             if let Ok(image) = bmp.encode_png() {
                 println!("render complete for page: {}", page);
                 let b64 = base64::engine::general_purpose::STANDARD.encode(image);
-                return Ok(TypstRenderResponse { image: b64 });
+                return Ok(TypstRenderResponse {
+                    image: b64,
+                    width: bmp.width(),
+                    height: bmp.height(),
+                });
             }
         }
     }
