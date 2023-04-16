@@ -17,7 +17,6 @@ Typstudio is built using [Tauri](https://tauri.app/).
 - [ ] Complete file explorer system
 - [ ] Auto complete
 - [ ] Linting and formatting
-- [ ]
 - [ ] Bibliography assistant
 - [ ] Formatting assistant
 - [ ] Project creation assistant / templates
