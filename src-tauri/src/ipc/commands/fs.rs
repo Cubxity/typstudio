@@ -97,8 +97,23 @@ pub async fn fs_write_file_text<R: Runtime>(
             doc.hash(&mut hasher);
             let hash = hex::encode(hasher.finish128().as_bytes());
 
+            // Assume all pages have the same size
+            // TODO: Improve this?
+            let first_page = &doc.pages[0];
+            let width = first_page.width();
+            let height = first_page.height();
+
             project.cache.write().unwrap().document = Some(doc);
-            let _ = window.emit("typst_compile", TypstCompileEvent { pages, hash });
+
+            let _ = window.emit(
+                "typst_compile",
+                TypstCompileEvent {
+                    pages,
+                    hash,
+                    width: width.to_pt(),
+                    height: height.to_pt(),
+                },
+            );
         }
         Err(e) => {
             println!("compile error: {:?}", e);

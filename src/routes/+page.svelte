@@ -21,7 +21,7 @@
   <Explorer class="w-80" />
   {#if $shell.selectedFile}
     <Editor class="min-w-0 flex-1" path={$shell.selectedFile} />
-    <Preview class="flex-1" />
+    <Preview class="min-w-0 flex-1" />
   {:else}
     <Empty text={$project ? "No file selected" : "No project open"} />
   {/if}

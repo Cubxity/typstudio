@@ -4,6 +4,8 @@ use serde::Serialize;
 pub struct TypstCompileEvent {
     pub pages: usize,
     pub hash: String,
+    pub width: f64,
+    pub height: f64,
 }
 
 #[derive(Serialize, Clone, Debug)]

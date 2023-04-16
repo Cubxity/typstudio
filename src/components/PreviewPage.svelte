@@ -1,25 +1,37 @@
 <script lang="ts">
   import type { TypstRenderResponse } from "../lib/ipc";
-  import { invoke } from "@tauri-apps/api";
+  import { render } from "../lib/ipc";
 
   export let page: number;
   export let hash: string;
+  export let width: number;
+  export let height: number;
+  export let scale: number;
 
-  let img: HTMLImageElement;
+  let canvas: HTMLCanvasElement;
 
-  const render = async (hash: string) => {
-    console.log(`update: ${hash}`);
-
+  const update = async (hash: string, updateScale: number) => {
     // return
-    const res: TypstRenderResponse = await invoke("typst_render", { page });
-    const dataUrl = "data:image/png;base64," + res.image;
-    const blob = await fetch(dataUrl).then(res => res.blob());
-    img.src = URL.createObjectURL(blob);
+    const res: TypstRenderResponse = await render(page, updateScale);
+
+    const img = new Image(width, height);
+    img.src = "data:image/png;base64," + res.image;
+    img.onload = () => {
+      if (scale === updateScale) {
+        const ctx = canvas.getContext("2d");
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx.drawImage(img, 0, 0);
+      }
+    };
   };
 
-  $: render(hash);
+  $: update(hash, scale);
 </script>
 
-<div class="w-[595px] h-[842px] min-w-[595px] min-h-[842px] bg-white shadow-md">
-  <img class="bg-white" alt="" bind:this={img} />
+<div
+  class="bg-white shadow-md mx-auto"
+  style="height: {height}px; min-height: {height}px; width: {width}px; min-width: {width}px; box-sizing: border-box;">
+  <canvas class="bg-white w-full h-full" bind:this={canvas}></canvas>
 </div>

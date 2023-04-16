@@ -6,13 +6,20 @@
   import type { TypstCompileEvent } from "../lib/ipc";
   import { appWindow } from "@tauri-apps/api/window";
 
+  const scales = [0.5, 1.0, 1.25, 1.5, 2, 3, 4];
+
   let container: HTMLDivElement;
   let previousEvent: MouseEvent | undefined;
 
   let isMouseDown = false;
+  let scaleIndex = 1; // scales[1] = 100%
+  let scale: number;
+  $: scale = scales[scaleIndex];
 
   let pages = 0;
   let hash = null;
+  let width: number;
+  let height: number;
 
   const handleMouseDown = (event: MouseEvent) => {
     event.preventDefault();
@@ -35,13 +42,25 @@
     previousEvent = event;
   };
 
+  const handleWheel = (event: WheelEvent) => {
+    if (event.ctrlKey) {
+      event.preventDefault();
+
+      if (event.deltaY < 0) { // zoom in
+        scale = scales[scaleIndex = Math.min(scaleIndex + 1, scales.length - 1)];
+      } else if (event.deltaY > 0) { // zoom out
+        scale = scales[scaleIndex = Math.max(scaleIndex - 1, 0)];
+      }
+    }
+  };
+
   onMount(async () => {
-
-
     // Returns an unlisten function
     return appWindow.listen<TypstCompileEvent>("typst_compile", ({ event, payload }) => {
       pages = payload.pages;
       hash = payload.hash;
+      width = payload.width;
+      height = payload.height;
     });
   });
 </script>
@@ -52,9 +71,10 @@
   on:mousedown={handleMouseDown}
   on:mouseup={handleMouseUp}
   on:mouseleave={handleMouseUp}
-  class={clsx("flex flex-col items-center overflow-auto bg-neutral-700 p-4 gap-4", $$props.class)}
+  on:wheel={handleWheel}
+  class={clsx("flex flex-col overflow-auto bg-neutral-700 p-4 gap-4", $$props.class)}
 >
   {#each Array(pages) as _, i}
-    <PreviewPage page={i} hash={hash} />
+    <PreviewPage page={i} hash={hash} width={width * scale} height={height * scale} scale={scale} />
   {/each}
 </div>
