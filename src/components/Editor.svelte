@@ -1,13 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { editor as editorType } from "monaco-editor";
-  import { invoke } from "@tauri-apps/api";
   import debounce from "lodash/debounce";
 
   import ICodeEditor = editorType.ICodeEditor;
   import IModelContentChangedEvent = editorType.IModelContentChangedEvent;
-  import type { FsReadResponse } from "../lib/ipc";
   import { initMonaco } from "../lib/editor/monaco";
+  import { readFileText, writeFileText } from "../lib/ipc";
 
   let divEl: HTMLDivElement;
   let editor: ICodeEditor;
@@ -15,10 +14,10 @@
   export let path: string;
 
   const handleUpdate = () => {
-    invoke("fs_update_file", {
-      path,
-      content: editor.getModel()?.getValue()
-    });
+    const content = editor.getModel()?.getValue();
+    if (content) {
+      writeFileText(path, content);
+    }
   };
   const handleUpdateDebounce = debounce(handleUpdate, 100, { maxWait: 300 });
 
@@ -50,18 +49,15 @@
     };
   });
 
-  const fetchContent = (editor: ICodeEditor, path: string) => {
+  const fetchContent = async (editor: ICodeEditor, path: string) => {
     if (!editor) return;
 
     // TODO: Ensure file integrity
     // Make sure that the file does not get overridden by the old file due to desynced debounce
     // Make sure that the editor does not get override by pending file loads due to desynced load
     // Make sure that the old file is saved properly before loading the new file
-
-    invoke<FsReadResponse>("fs_read_file", { path })
-      .then(res => {
-        editor.getModel()?.setValue(res.content);
-      });
+    const content = await readFileText(path);
+    editor.getModel()?.setValue(content);
   };
 
   $: fetchContent(editor, path);

@@ -5,15 +5,15 @@
   import FolderIcon from "./icons/FolderIcon.svelte";
   import ArrowDropDownIcon from "./icons/ArrowDropDownIcon.svelte";
   import ArrowRightIcon from "./icons/ArrowRightIcon.svelte";
-  import { invoke } from "@tauri-apps/api";
-  import type { FileEntry, FileType, FsListResponse } from "../lib/ipc";
+  import type { FileItem, FileType } from "../lib/ipc";
   import { shell } from "../lib/stores";
+  import { listDir } from "../lib/ipc";
 
   export let type: FileType;
   export let path: string;
 
   let expanded = false;
-  let files: FileEntry[] = [];
+  let files: FileItem[] = [];
 
   const handleClick = () => {
     if (type === "directory") {
@@ -23,12 +23,13 @@
     }
   };
 
+  const update = async () => {
+    files = await listDir(path);
+  };
+
   $: {
     if (expanded) {
-      invoke<FsListResponse>("fs_list", { path })
-        .then(res => {
-          files = res.files;
-        });
+      update();
     }
   }
 </script>

@@ -1,69 +1,107 @@
-use crate::ipc::model::{FileItem, FileType, FsListResponse, IPCError, TypstCompileEvent};
-use crate::ipc::FsReadResponse;
-use crate::project::ProjectManager;
+use super::{Error, Result};
+use crate::ipc::model::TypstCompileEvent;
+use crate::project::{Project, ProjectManager};
+use enumset::EnumSetType;
+use serde::Serialize;
 use siphasher::sip128::{Hasher128, SipHasher};
 use std::fs;
 use std::fs::File;
 use std::hash::Hash;
 use std::io::Write;
+use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::Runtime;
+use tauri::{Runtime, State, Window};
 
-#[tauri::command]
-pub async fn fs_read_file<R: Runtime>(
-    window: tauri::Window<R>,
-    path: String,
-    project_manager: tauri::State<'_, Arc<ProjectManager>>,
-) -> Result<FsReadResponse, IPCError> {
-    if let Some(project) = project_manager.get_project(&window) {
-        let p = project.root.join(path);
-        let res = fs::read_to_string(p).map_err(|_| IPCError::IOError)?;
-        return Ok(FsReadResponse { content: res });
+#[derive(Serialize, Debug)]
+pub struct FileItem {
+    pub name: String,
+    #[serde(rename = "type")]
+    pub file_type: FileType,
+}
+
+#[derive(EnumSetType, Serialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum FileType {
+    File,
+    Directory,
+}
+
+/// Retrieves the project and resolves the path. Furthermore,
+/// this function will resolve the path relative to project's root
+/// and checks whether the path belongs to the project root.
+fn project_path<R: Runtime>(
+    window: &Window<R>,
+    project_manager: &State<Arc<ProjectManager>>,
+    path: PathBuf,
+) -> Result<(Arc<Project>, PathBuf)> {
+    let project = project_manager
+        .get_project(&window)
+        .ok_or(Error::UnknownProject)?;
+    let rel_path = project.root.join(path);
+
+    // This will resolve symlinks and reject resolved files outside the project's root
+    let path = rel_path.canonicalize().unwrap_or(rel_path);
+    if !path.starts_with(&project.root) {
+        return Err(Error::UnrelatedPath);
     }
-    Err(IPCError::Unknown)
+    Ok((project, path))
+}
+
+/// Reads raw bytes from a specified path.
+/// Note that this command is slow compared to the text API due to Wry's
+/// messaging system in v1. See: https://github.com/tauri-apps/tauri/issues/1817
+#[tauri::command]
+pub async fn fs_read_file_binary<R: Runtime>(
+    window: Window<R>,
+    project_manager: State<'_, Arc<ProjectManager>>,
+    path: PathBuf,
+) -> Result<Vec<u8>> {
+    let (_, path) = project_path(&window, &project_manager, path)?;
+    fs::read(&path).map_err(Into::into)
 }
 
 #[tauri::command]
-pub async fn fs_update_file<R: Runtime>(
-    window: tauri::Window<R>,
-    path: String,
+pub async fn fs_read_file_text<R: Runtime>(
+    window: Window<R>,
+    project_manager: State<'_, Arc<ProjectManager>>,
+    path: PathBuf,
+) -> Result<String> {
+    let (_, path) = project_path(&window, &project_manager, path)?;
+    fs::read_to_string(&path).map_err(Into::into)
+}
+
+#[tauri::command]
+pub async fn fs_write_file_text<R: Runtime>(
+    window: Window<R>,
+    project_manager: State<'_, Arc<ProjectManager>>,
+    path: PathBuf,
     content: String,
-    project_manager: tauri::State<'_, Arc<ProjectManager>>,
-) -> Result<(), ()> {
-    if let Some(project) = project_manager.get_project(&window) {
-        let p = project.root.join(path);
-        println!("updating file: {:?}", p);
-        let res = File::create(&p).and_then(|mut f| f.write_all(content.as_bytes()));
+) -> Result<()> {
+    let (project, path) = project_path(&window, &project_manager, path)?;
+    let _ = File::create(&path)
+        .map(|mut f| f.write_all(content.as_bytes()))
+        .map_err(Into::<Error>::into)?;
 
-        match res {
-            Ok(_) => {
-                println!("update successful");
-            }
-            Err(e) => {
-                println!("update failed: {:?}", e);
-            }
+    // TODO: Move this logic somewhere else
+    let mut world = project.world.lock().unwrap();
+    let source = world.slot_update(path.as_path()).expect("Update failed");
+    world.set_main(source);
+
+    println!("compiling: {:?}", path);
+    match typst::compile(&*world) {
+        Ok(doc) => {
+            println!("compiled: {:?}", doc);
+            let pages = doc.pages.len();
+
+            let mut hasher = SipHasher::new();
+            doc.hash(&mut hasher);
+            let hash = hex::encode(hasher.finish128().as_bytes());
+
+            project.cache.write().unwrap().document = Some(doc);
+            let _ = window.emit("typst_compile", TypstCompileEvent { pages, hash });
         }
-
-        let mut world = project.world.lock().unwrap();
-        let source = world.slot_update(p.as_path()).expect("Update failed");
-        world.set_main(source);
-
-        println!("compiling: {:?}", p);
-        match typst::compile(&*world) {
-            Ok(doc) => {
-                println!("compiled: {:?}", doc);
-                let pages = doc.pages.len();
-
-                let mut hasher = SipHasher::new();
-                doc.hash(&mut hasher);
-                let hash = hex::encode(hasher.finish128().as_bytes());
-
-                project.cache.write().unwrap().document = Some(doc);
-                let _ = window.emit("typst_compile", TypstCompileEvent { pages, hash });
-            }
-            Err(e) => {
-                println!("compile error: {:?}", e);
-            }
+        Err(e) => {
+            println!("compile error: {:?}", e);
         }
     }
 
@@ -71,33 +109,30 @@ pub async fn fs_update_file<R: Runtime>(
 }
 
 #[tauri::command]
-pub async fn fs_list<R: Runtime>(
-    window: tauri::Window<R>,
-    project_manager: tauri::State<'_, Arc<ProjectManager>>,
-    path: String,
-) -> Result<FsListResponse, IPCError> {
-    // TODO: Assure that path does not traverse above project's root directory
-    if let Some(project) = project_manager.get_project(&window) {
-        let path = project.root.join(path);
-        println!("listing {:?}", path);
-        let list = fs::read_dir(path).map_err(|_| IPCError::IOError)?;
-        let mut files: Vec<FileItem> = vec![];
-        for entry in list {
-            if let Ok(entry) = entry {
-                if let (Ok(file_type), Ok(name)) =
-                    (entry.file_type(), entry.file_name().into_string())
-                {
-                    let t = if file_type.is_dir() {
-                        FileType::Directory
-                    } else {
-                        FileType::File
-                    };
-                    files.push(FileItem { name, file_type: t });
-                }
+pub async fn fs_list_dir<R: Runtime>(
+    window: Window<R>,
+    project_manager: State<'_, Arc<ProjectManager>>,
+    path: PathBuf,
+) -> Result<Vec<FileItem>> {
+    let (_, path) = project_path(&window, &project_manager, path)?;
+    let list = fs::read_dir(&path).map_err(Into::<Error>::into)?;
+
+    let mut files: Vec<FileItem> = vec![];
+    for entry in list {
+        if let Ok(entry) = entry {
+            if let (Ok(file_type), Ok(name)) = (entry.file_type(), entry.file_name().into_string())
+            {
+                // File should only be directory or file.
+                // Symlinks should be resolved in project_path.
+                let t = if file_type.is_dir() {
+                    FileType::Directory
+                } else {
+                    FileType::File
+                };
+                files.push(FileItem { name, file_type: t });
             }
         }
-
-        return Ok(FsListResponse { files });
     }
-    Err(IPCError::Unknown)
+
+    Ok(files)
 }

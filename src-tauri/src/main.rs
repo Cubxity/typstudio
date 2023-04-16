@@ -4,9 +4,9 @@
 )]
 
 mod engine;
+mod ipc;
 mod menu;
 mod project;
-mod ipc;
 
 use crate::menu::handle_menu_event;
 use crate::project::ProjectManager;
@@ -21,9 +21,10 @@ fn main() {
         .on_menu_event(handle_menu_event)
         .manage(project_manager)
         .invoke_handler(tauri::generate_handler![
-            ipc::commands::fs_list,
-            ipc::commands::fs_read_file,
-            ipc::commands::fs_update_file,
+            ipc::commands::fs_list_dir,
+            ipc::commands::fs_read_file_binary,
+            ipc::commands::fs_read_file_text,
+            ipc::commands::fs_write_file_text,
             ipc::commands::typst_render
         ])
         .run(tauri::generate_context!())
