@@ -8,7 +8,12 @@ import theme from "./data/theme.json";
 import { wireTextMateGrammars } from "./grammar";
 
 export const initMonaco = (async () => {
-  await oniguruma.loadWASM(await fetch(onigurumaWasm));
+  // Don't use streaming due to MIME type mismatch.
+  // See: https://github.com/tauri-apps/tauri/issues/5749
+  // TODO: Switch to streaming once Tauri v2 is out
+  const wasm = await fetch(onigurumaWasm).then((res) => res.arrayBuffer());
+  await oniguruma.loadWASM(wasm);
+
   const registry = new Registry({
     onigLib: Promise.resolve(oniguruma),
     loadGrammar() {
