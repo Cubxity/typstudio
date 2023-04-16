@@ -10,20 +10,22 @@
 
   let divEl: HTMLDivElement;
   let editor: ICodeEditor;
+  const monacoImport = import("monaco-editor");
 
   export let path: string;
 
   const handleUpdate = () => {
-    const content = editor.getModel()?.getValue();
-    if (content) {
-      writeFileText(path, content);
+    const model = editor.getModel();
+    if (model) {
+      // Removing the preceding slash
+      const path = model.uri.path.substring(1);
+      writeFileText(path, model.getValue());
     }
   };
   const handleUpdateDebounce = debounce(handleUpdate, 100, { maxWait: 300 });
 
   onMount(async () => {
     const EditorWorker = await import("monaco-editor/esm/vs/editor/editor.worker?worker");
-    const monaco = await import("monaco-editor");
     await initMonaco;
 
     // @ts-ignore
@@ -33,11 +35,10 @@
       }
     };
 
-    editor = monaco.editor.create(divEl, {
-      value: "",
-      language: "typst",
+    editor = (await monacoImport).editor.create(divEl, {
       lineHeight: 1.8,
-      automaticLayout: true
+      automaticLayout: true,
+      readOnly: true
     });
 
     editor.onDidChangeModelContent((e: IModelContentChangedEvent) => {
@@ -52,12 +53,30 @@
   const fetchContent = async (editor: ICodeEditor, path: string) => {
     if (!editor) return;
 
-    // TODO: Ensure file integrity
-    // Make sure that the file does not get overridden by the old file due to desynced debounce
-    // Make sure that the editor does not get override by pending file loads due to desynced load
-    // Make sure that the old file is saved properly before loading the new file
-    const content = await readFileText(path);
-    editor.getModel()?.setValue(content);
+    // Prevent further updates and immediately flush pending updates
+    editor.updateOptions({ readOnly: true });
+    handleUpdateDebounce.flush();
+
+    editor.getModel()?.dispose();
+
+    try {
+      const content = await readFileText(path);
+      const monaco = await monacoImport;
+      const uri = monaco.Uri.file(path);
+
+      let model = monaco.editor.getModel(uri);
+      if (model) {
+        // Update existing model. This should only be possible in development mode
+        // after hot reload.
+        model.setValue(content);
+      } else {
+        model = monaco.editor.createModel(content, undefined, uri);
+      }
+
+      editor.setModel(model);
+    } finally {
+      editor.updateOptions({ readOnly: false });
+    }
   };
 
   $: fetchContent(editor, path);

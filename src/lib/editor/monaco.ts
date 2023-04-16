@@ -24,7 +24,7 @@ export const initMonaco = (async () => {
   const grammars = new Map();
   grammars.set("typst", "source.typst");
 
-  monaco.languages.register({ id: "typst" });
+  monaco.languages.register({ id: "typst", extensions: ["typ"] });
   await wireTextMateGrammars(registry, { typst: "source.typst" });
 
   monaco.editor.defineTheme("dracula", theme as monaco.editor.IStandaloneThemeData);

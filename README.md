@@ -5,10 +5,6 @@ Typstudio is built using [Tauri](https://tauri.app/).
 
 ![](.github/assets/screenshot.png)
 
-> ⚠️ **Disclaimer**
->
-> The application is currently *extremely* unstable. No file integrity or stability is guaranteed. Proceed with caution.
-
 ## Features
 
 - [x] Syntax highlighting
