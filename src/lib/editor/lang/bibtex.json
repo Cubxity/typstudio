@@ -1,0 +1,146 @@
+{
+  "displayName": "BibTeX",
+  "name": "bibtex",
+  "mimeTypes": [
+    "text/bibtex"
+  ],
+  "fileExtensions": [
+    "bib"
+  ],
+  "ignoreCase": true,
+  "lineComment": "% ",
+  "entries": [
+    "article",
+    "book",
+    "booklet",
+    "conference",
+    "inbook",
+    "incollection",
+    "inproceedings",
+    "manual",
+    "mastersthesis",
+    "misc",
+    "phdthesis",
+    "proceedings",
+    "techreport",
+    "unpublished",
+    "xdata",
+    "preamble",
+    "string",
+    "comment"
+  ],
+  "fields": [
+    "address",
+    "annote",
+    "author",
+    "booktitle",
+    "chapter",
+    "crossref",
+    "edition",
+    "editor",
+    "howpublished",
+    "institution",
+    "journal",
+    "key",
+    "month",
+    "note",
+    "number",
+    "organization",
+    "pages",
+    "publisher",
+    "school",
+    "series",
+    "title",
+    "type",
+    "volume",
+    "year",
+    "url",
+    "isbn",
+    "issn",
+    "lccn",
+    "abstract",
+    "keywords",
+    "price",
+    "copyright",
+    "language",
+    "contents",
+    "numpages",
+    "doi",
+    "http",
+    "eds",
+    "editors",
+    "location",
+    "eprinttype",
+    "etype",
+    "eprint",
+    "eprintpath",
+    "primaryclass",
+    "eprintclass",
+    "archiveprefix",
+    "origpublisher",
+    "origlocation",
+    "venue",
+    "volumes",
+    "pagetotal",
+    "annotation",
+    "annote",
+    "pubstate",
+    "date",
+    "urldate",
+    "eventdate",
+    "origdate",
+    "urltext"
+  ],
+  "tokenizer": {
+    "root": [
+      [
+        "\\\\[^a-z]",
+        "string.escape"
+      ],
+      [
+        "(@)([a-z]+)(\\{)(\\s*[^\\s,=]+)?",
+        [
+          "keyword",
+          {
+            "cases": {
+              "$2@entries": "keyword",
+              "@default": ""
+            }
+          },
+          "@brackets",
+          "type"
+        ]
+      ],
+      [
+        "\\b([a-z]+)(?=\\s*=)",
+        {
+          "cases": {
+            "$1@fields": "constructor",
+            "@default": ""
+          }
+        }
+      ],
+      [
+        "[=]",
+        "keyword"
+      ],
+      {
+        "include": "@whitespace"
+      },
+      [
+        "[{}()\\[\\]]",
+        "@brackets"
+      ]
+    ],
+    "whitespace": [
+      [
+        "[ \\t\\r\\n]+",
+        "white"
+      ],
+      [
+        "%.*$",
+        "comment"
+      ]
+    ]
+  }
+}
