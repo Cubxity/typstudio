@@ -36,7 +36,10 @@ fn build_menu() -> Menu {
         "File",
         Menu::new()
             .add_item(CustomMenuItem::new("file_open_project", "Open Project"))
-            .add_submenu(Submenu::new("Export", Menu::new()))
+            .add_submenu(Submenu::new(
+                "Export",
+                Menu::new().add_item(CustomMenuItem::new("file_export_pdf", "Export PDF")),
+            ))
             .add_item(CustomMenuItem::new("file_quit", "Quit")),
     );
     let edit_submenu = Submenu::new("Edit", Menu::new());
