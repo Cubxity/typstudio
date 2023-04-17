@@ -5,6 +5,6 @@
 </script>
 
 
-<div class={clsx("border-r border-neutral-600 p-3 select-none", $$props.class)}>
+<div class={clsx("border-r border-neutral-700 p-3 select-none", $$props.class)}>
   <ExplorerNode type="directory" path="" />
 </div>

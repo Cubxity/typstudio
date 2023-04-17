@@ -1,5 +1,4 @@
 <script lang="ts">
-
   import clsx from "clsx";
   import FileIcon from "./icons/FileIcon.svelte";
   import FolderIcon from "./icons/FolderIcon.svelte";
@@ -38,8 +37,8 @@
   class={clsx(
     "text-sm rounded-md pr-2 py-0.5 hover:bg-neutral-700/50 text-white fill-white flex items-center transition",
     path === "" && "font-bold",
-    $shell.selectedFile === path && "bg-neutral-700")
-  }
+    $shell.selectedFile === path && "bg-neutral-700"
+  )}
   style="padding-left: {path === '' ? 8 : 8 + path.split('/').length * 10}px"
   on:click={handleClick}
   role="button"
@@ -54,10 +53,15 @@
     this={type === "file" ? FileIcon : FolderIcon}
     class={clsx("w-4 h-4 inline fill-neutral-500 mr-2", type === "file" && "ml-5")}
   />
-  {path === "" ? "root" : path.slice(path.lastIndexOf("/") + 1)}
+  <span class="flex-1 truncate">
+    {path === "" ? "root" : path.slice(path.lastIndexOf("/") + 1)}
+  </span>
 </div>
 {#if expanded}
   {#each files as file}
-    <svelte:self type={file.type} path={path === "" ? `${path}${file.name}` : `${path}/${file.name}`} />
+    <svelte:self
+      type={file.type}
+      path={path === "" ? `${path}${file.name}` : `${path}/${file.name}`}
+    />
   {/each}
 {/if}
