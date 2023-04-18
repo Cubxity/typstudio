@@ -10,7 +10,7 @@ Typstudio is built using [Tauri](https://tauri.app/).
 - [x] Syntax highlighting
 - [x] Real time preview
     - [ ] Navigate to source
-- [ ] Build/export
+- [x] Build/export
 - [ ] Complete file explorer system
 - [ ] Auto complete
 - [ ] Linting and formatting
