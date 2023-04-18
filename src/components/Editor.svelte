@@ -41,7 +41,8 @@
     editor = (await monacoImport).editor.create(divEl, {
       lineHeight: 1.8,
       automaticLayout: true,
-      readOnly: true
+      readOnly: true,
+      folding: true
     });
 
     editor.onDidChangeModelContent((e: IModelContentChangedEvent) => {
