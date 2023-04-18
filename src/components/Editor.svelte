@@ -3,10 +3,13 @@
   import type { editor as editorType } from "monaco-editor";
   import debounce from "lodash/debounce";
 
+  import { initMonaco } from "../lib/editor/monaco";
+  import type { TypstCompileEvent } from "../lib/ipc";
+  import { readFileText, writeFileText } from "../lib/ipc";
+  import { appWindow } from "@tauri-apps/api/window";
   import ICodeEditor = editorType.ICodeEditor;
   import IModelContentChangedEvent = editorType.IModelContentChangedEvent;
-  import { initMonaco } from "../lib/editor/monaco";
-  import { readFileText, writeFileText } from "../lib/ipc";
+  import IMarkerData = editorType.IMarkerData;
 
   let divEl: HTMLDivElement;
   let editor: ICodeEditor;
@@ -48,6 +51,32 @@
     return () => {
       editor.dispose();
     };
+  });
+
+  onMount(async () => {
+    const monaco = await monacoImport;
+
+    // Returns an unlisten function
+    return appWindow.listen<TypstCompileEvent>("typst_compile", ({ event, payload }) => {
+      const { errors } = payload;
+      const model = editor.getModel();
+      if (model) {
+        const markers: IMarkerData[] = errors?.map(({ range, message }) => {
+          const start = model.getPositionAt(range.start);
+          const end = model.getPositionAt(range.end);
+          return {
+            startLineNumber: start.lineNumber,
+            startColumn: start.column,
+            endLineNumber: end.lineNumber,
+            endColumn: end.column,
+            message,
+            severity: monaco.MarkerSeverity.Error
+          };
+        }) ?? [];
+
+        monaco.editor.setModelMarkers(model, "owner", markers);
+      }
+    });
   });
 
   const fetchContent = async (editor: ICodeEditor, path: string) => {

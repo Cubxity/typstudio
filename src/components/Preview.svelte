@@ -54,13 +54,16 @@
     }
   };
 
-  onMount(async () => {
+  onMount(() => {
     // Returns an unlisten function
     return appWindow.listen<TypstCompileEvent>("typst_compile", ({ event, payload }) => {
-      pages = payload.pages;
-      hash = payload.hash;
-      width = payload.width;
-      height = payload.height;
+      const { document } = payload;
+      if (document) {
+        pages = document.pages;
+        hash = document.hash;
+        width = document.width;
+        height = document.height;
+      }
     });
   });
 </script>

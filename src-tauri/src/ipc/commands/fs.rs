@@ -1,5 +1,6 @@
 use super::{Error, Result};
 use crate::ipc::model::TypstCompileEvent;
+use crate::ipc::{TypstDocument, TypstSourceError};
 use crate::project::{Project, ProjectManager};
 use enumset::EnumSetType;
 use serde::Serialize;
@@ -11,6 +12,8 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{Runtime, State, Window};
+use typst::syntax::ErrorPos;
+use typst::World;
 
 #[derive(Serialize, Debug)]
 pub struct FileItem {
@@ -84,8 +87,8 @@ pub async fn fs_write_file_text<R: Runtime>(
 
     // TODO: Move this logic somewhere else
     let mut world = project.world.lock().unwrap();
-    let source = world.slot_update(path.as_path()).expect("Update failed");
-    world.set_main(source);
+    let source_id = world.slot_update(path.as_path()).expect("Update failed");
+    world.set_main(source_id);
 
     println!("compiling: {:?}", path);
     match typst::compile(&*world) {
@@ -108,15 +111,42 @@ pub async fn fs_write_file_text<R: Runtime>(
             let _ = window.emit(
                 "typst_compile",
                 TypstCompileEvent {
-                    pages,
-                    hash,
-                    width: width.to_pt(),
-                    height: height.to_pt(),
+                    document: Some(TypstDocument {
+                        pages,
+                        hash,
+                        width: width.to_pt(),
+                        height: height.to_pt(),
+                    }),
+                    errors: None,
                 },
             );
         }
-        Err(e) => {
-            println!("compile error: {:?}", e);
+        Err(errors) => {
+            println!("compile error: {:?}", errors);
+
+            let source = world.source(source_id);
+            let errors: Vec<TypstSourceError> = errors
+                .iter()
+                .filter(|e| e.span.source() == source_id)
+                .map(|e| {
+                    let span = source.range(e.span);
+                    let range = match e.pos {
+                        ErrorPos::Full => span,
+                        ErrorPos::Start => span.start..span.start,
+                        ErrorPos::End => span.end..span.end,
+                    };
+                    let message = e.message.to_string();
+                    TypstSourceError { range, message }
+                })
+                .collect();
+
+            let _ = window.emit(
+                "typst_compile",
+                TypstCompileEvent {
+                    document: None,
+                    errors: Some(errors),
+                },
+            );
         }
     }
 

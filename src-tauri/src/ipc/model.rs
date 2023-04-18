@@ -1,7 +1,14 @@
 use serde::Serialize;
+use std::ops::Range;
 
 #[derive(Serialize, Clone, Debug)]
 pub struct TypstCompileEvent {
+    pub document: Option<TypstDocument>,
+    pub errors: Option<Vec<TypstSourceError>>,
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub struct TypstDocument {
     pub pages: usize,
     pub hash: String,
     pub width: f64,
@@ -9,10 +16,16 @@ pub struct TypstCompileEvent {
 }
 
 #[derive(Serialize, Clone, Debug)]
+pub struct TypstSourceError {
+    pub range: Range<usize>,
+    pub message: String,
+}
+
+#[derive(Serialize, Clone, Debug)]
 pub struct TypstRenderResponse {
     pub image: String,
     pub width: u32,
-    pub height: u32
+    pub height: u32,
 }
 
 #[derive(Serialize, Clone, Debug)]
