@@ -385,9 +385,9 @@ dependencies = [
 
 [[package]]
 name = "comemo"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70b396e6f0a1a7d2c1d588fd8a255a8c30a8edeef65bc96b4afb3fdb8a8bf281"
+checksum = "1ba423e212681b51c5452a458bb24e88165f4c09857a783c802719cc46313f3f"
 dependencies = [
  "comemo-macros",
  "siphasher",
@@ -395,9 +395,9 @@ dependencies = [
 
 [[package]]
 name = "comemo-macros"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "421c3e125e48959f3b6a18c0d266f3c228f6e28464c73cc44cff24e808fcda2d"
+checksum = "fca5ceeb99665bad04a32fe297d1581a68685e36fb6da92a1c9b7d9693638c01"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -729,9 +729,9 @@ checksum = "0bd4b30a6560bbd9b4620f4de34c3f14f60848e58a9b7216801afcb4c7b31c3c"
 
 [[package]]
 name = "ecow"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e60e2840fbfc397c7972b11a6e6bd99a0248921cc1e31f293c5f6c5ac24831da"
+checksum = "c5c5051925c54d9a42c8652313b5358a7432eed209466b443ed5220431243a14"
 
 [[package]]
 name = "elsa"
@@ -3698,7 +3698,7 @@ checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
 [[package]]
 name = "typst"
 version = "0.2.0"
-source = "git+https://github.com/typst/typst?branch=main#261b96da68890dd1054efb76a72ee997cb779bae"
+source = "git+https://github.com/typst/typst?branch=main#b51cb131bdfff327eadf5cfcb33e938b04363945"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -3736,7 +3736,7 @@ dependencies = [
 [[package]]
 name = "typst-library"
 version = "0.2.0"
-source = "git+https://github.com/typst/typst?branch=main#261b96da68890dd1054efb76a72ee997cb779bae"
+source = "git+https://github.com/typst/typst?branch=main#b51cb131bdfff327eadf5cfcb33e938b04363945"
 dependencies = [
  "chinese-number",
  "comemo",
@@ -3767,7 +3767,7 @@ dependencies = [
 [[package]]
 name = "typst-macros"
 version = "0.2.0"
-source = "git+https://github.com/typst/typst?branch=main#261b96da68890dd1054efb76a72ee997cb779bae"
+source = "git+https://github.com/typst/typst?branch=main#b51cb131bdfff327eadf5cfcb33e938b04363945"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
