@@ -8,7 +8,7 @@ use typst::geom::Color;
 #[tauri::command]
 pub async fn typst_render<R: Runtime>(
     window: tauri::Window<R>,
-    project_manager: tauri::State<'_, Arc<ProjectManager>>,
+    project_manager: tauri::State<'_, Arc<ProjectManager<R>>>,
     page: usize,
     scale: f32,
 ) -> Result<TypstRenderResponse, ()> {

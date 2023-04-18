@@ -11,10 +11,14 @@ mod project;
 use crate::menu::handle_menu_event;
 use crate::project::ProjectManager;
 use std::sync::Arc;
-use tauri::{CustomMenuItem, Menu, Submenu};
+use tauri::{CustomMenuItem, Menu, Submenu, Wry};
 
-fn main() {
-    let project_manager = Arc::new(ProjectManager::new());
+#[tokio::main]
+async fn main() {
+    let project_manager = Arc::new(ProjectManager::<Wry>::new());
+    if let Ok(watcher) = ProjectManager::init_watcher(project_manager.clone()) {
+        let _ = project_manager.set_watcher(watcher);
+    }
 
     tauri::Builder::default()
         .menu(build_menu())
@@ -24,6 +28,7 @@ fn main() {
             ipc::commands::fs_list_dir,
             ipc::commands::fs_read_file_binary,
             ipc::commands::fs_read_file_text,
+            ipc::commands::fs_create_file,
             ipc::commands::fs_write_file_text,
             ipc::commands::typst_render
         ])

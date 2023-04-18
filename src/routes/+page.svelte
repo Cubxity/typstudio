@@ -8,6 +8,7 @@
   import { appWindow } from "@tauri-apps/api/window";
   import StatusBar from "../components/StatusBar.svelte";
   import SidePanel from "../components/SidePanel.svelte";
+  import Modals from "../components/ShellModal.svelte";
 
   onMount(() => {
     return appWindow.listen<ProjectChangeEvent>("project_changed", ({ payload }) => {
@@ -19,6 +20,7 @@
 </script>
 
 <div class="flex flex-col max-h-screen h-screen bg-[#1e1e1e]">
+  <Modals />
   <div class="flex flex-row flex-1 text-white min-h-0">
     <SidePanel />
     {#if $shell.selectedFile}

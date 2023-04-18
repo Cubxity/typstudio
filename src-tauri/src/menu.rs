@@ -11,7 +11,7 @@ pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
             .pick_folder(move |path| {
                 if let Some(path) = path {
                     let window = e.window();
-                    let project_manager: State<'_, Arc<ProjectManager>> = window.state();
+                    let project_manager: State<'_, Arc<ProjectManager<_>>> = window.state();
                     let project = Arc::new(Project {
                         root: path,
                         world: ProjectWorld::new().into(),
@@ -28,7 +28,7 @@ pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
                     path.set_extension("pdf");
 
                     let window = e.window();
-                    let project_manager: State<'_, Arc<ProjectManager>> = window.state();
+                    let project_manager: State<'_, Arc<ProjectManager<_>>> = window.state();
                     if let Some(project) = project_manager.get_project(window) {
                         let cache = project.cache.read().unwrap();
                         if let Some(doc) = &cache.document {

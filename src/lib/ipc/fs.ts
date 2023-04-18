@@ -9,6 +9,10 @@ export interface FileItem {
 
 export type FileType = "file" | "directory";
 
+export interface FSRefreshEvent {
+  path: string;
+}
+
 export interface ProjectChangeEvent {
   project: Project | null;
 }
@@ -18,6 +22,8 @@ export const readFileBinary = (path: string): Promise<Uint8Array> =>
 
 export const readFileText = (path: string): Promise<string> =>
   invoke<string>("fs_read_file_text", { path });
+
+export const createFile = (path: string): Promise<never> => invoke("fs_create_file", { path });
 
 export const writeFileText = (path: string, content: string): Promise<string> =>
   invoke("fs_write_file_text", { path, content });

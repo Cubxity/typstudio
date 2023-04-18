@@ -6,7 +6,7 @@ use enumset::EnumSetType;
 use serde::Serialize;
 use siphasher::sip128::{Hasher128, SipHasher};
 use std::fs;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::hash::Hash;
 use std::io::Write;
 use std::path::PathBuf;
@@ -34,7 +34,7 @@ pub enum FileType {
 /// and checks whether the path belongs to the project root.
 fn project_path<R: Runtime>(
     window: &Window<R>,
-    project_manager: &State<Arc<ProjectManager>>,
+    project_manager: &State<Arc<ProjectManager<R>>>,
     path: PathBuf,
 ) -> Result<(Arc<Project>, PathBuf)> {
     let project = project_manager
@@ -56,7 +56,7 @@ fn project_path<R: Runtime>(
 #[tauri::command]
 pub async fn fs_read_file_binary<R: Runtime>(
     window: Window<R>,
-    project_manager: State<'_, Arc<ProjectManager>>,
+    project_manager: State<'_, Arc<ProjectManager<R>>>,
     path: PathBuf,
 ) -> Result<Vec<u8>> {
     let (_, path) = project_path(&window, &project_manager, path)?;
@@ -66,7 +66,7 @@ pub async fn fs_read_file_binary<R: Runtime>(
 #[tauri::command]
 pub async fn fs_read_file_text<R: Runtime>(
     window: Window<R>,
-    project_manager: State<'_, Arc<ProjectManager>>,
+    project_manager: State<'_, Arc<ProjectManager<R>>>,
     path: PathBuf,
 ) -> Result<String> {
     let (_, path) = project_path(&window, &project_manager, path)?;
@@ -74,9 +74,31 @@ pub async fn fs_read_file_text<R: Runtime>(
 }
 
 #[tauri::command]
+pub async fn fs_create_file<R: Runtime>(
+    window: Window<R>,
+    project_manager: State<'_, Arc<ProjectManager<R>>>,
+    path: PathBuf,
+) -> Result<()> {
+    let (_, path) = project_path(&window, &project_manager, path)?;
+
+    // Not sure if there's a scenario where this condition is not met
+    // unless the project is located at `/`
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(Into::<Error>::into)?;
+    }
+    OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create_new(true)
+        .open(&*path)
+        .map_err(Into::<Error>::into)?;
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn fs_write_file_text<R: Runtime>(
     window: Window<R>,
-    project_manager: State<'_, Arc<ProjectManager>>,
+    project_manager: State<'_, Arc<ProjectManager<R>>>,
     path: PathBuf,
     content: String,
 ) -> Result<()> {
@@ -156,7 +178,7 @@ pub async fn fs_write_file_text<R: Runtime>(
 #[tauri::command]
 pub async fn fs_list_dir<R: Runtime>(
     window: Window<R>,
-    project_manager: State<'_, Arc<ProjectManager>>,
+    project_manager: State<'_, Arc<ProjectManager<R>>>,
     path: PathBuf,
 ) -> Result<Vec<FileItem>> {
     let (_, path) = project_path(&window, &project_manager, path)?;

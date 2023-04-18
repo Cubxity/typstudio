@@ -1,5 +1,6 @@
 use serde::Serialize;
 use std::ops::Range;
+use std::path::PathBuf;
 
 #[derive(Serialize, Clone, Debug)]
 pub struct TypstCompileEvent {
@@ -36,4 +37,9 @@ pub struct ProjectChangeEvent {
 #[derive(Serialize, Clone, Debug)]
 pub struct ProjectModel {
     pub root: String,
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub struct FSRefreshEvent {
+    pub path: PathBuf,
 }
