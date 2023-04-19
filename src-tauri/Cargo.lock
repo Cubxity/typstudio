@@ -723,9 +723,9 @@ dependencies = [
 
 [[package]]
 name = "dunce"
-version = "1.0.4"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56ce8c6da7551ec6c462cbaf3bfbc75131ebbfa1c944aeaa9dab51ca1c5f0c3b"
+checksum = "0bd4b30a6560bbd9b4620f4de34c3f14f60848e58a9b7216801afcb4c7b31c3c"
 
 [[package]]
 name = "ecow"
@@ -885,17 +885,6 @@ name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
-
-[[package]]
-name = "fontdb"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d52186a39c335aa6f79fc0bf1c3cf854870b6ad4e50a7bb8a59b4ba1331f478a"
-dependencies = [
- "log",
- "memmap2",
- "ttf-parser 0.17.1",
-]
 
 [[package]]
 name = "foreign-types"
@@ -1709,9 +1698,9 @@ checksum = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.3.2"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f508063cc7bb32987c71511216bd5a32be15bccb6a80b52df8b9d7f01fc3aa2"
+checksum = "d59d8c75012853d2e872fb56bc8a2e53718e2cafe1a4c823143141c6d90c322f"
 
 [[package]]
 name = "lipsum"
@@ -1819,15 +1808,6 @@ name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
-
-[[package]]
-name = "memmap2"
-version = "0.5.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83faa42c0a078c393f6b29d5db232d8be22776a891f8f56e5284faee4a20b327"
-dependencies = [
- "libc",
-]
 
 [[package]]
 name = "memoffset"
@@ -2721,9 +2701,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.37.12"
+version = "0.37.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "722529a737f5a942fdbac3a46cee213053196737c5eaa3386d52e85b786f2659"
+checksum = "85597d61f83914ddeba6a47b3b8ffe7365107221c2e557ed94426489fefb5f77"
 dependencies = [
  "bitflags",
  "errno",
@@ -3790,12 +3770,6 @@ checksum = "7b3e06c9b9d80ed6b745c7159c40b311ad2916abb34a49e9be2653b90db0d8dd"
 
 [[package]]
 name = "ttf-parser"
-version = "0.17.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "375812fa44dab6df41c195cd2f7fecb488f6c09fbaafb62807488cefab642bff"
-
-[[package]]
-name = "ttf-parser"
 version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0609f771ad9c6155384897e1df4d948e692667cc0588548b68eb44d052b27633"
@@ -3815,14 +3789,13 @@ checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
 [[package]]
 name = "typst"
 version = "0.2.0"
-source = "git+https://github.com/typst/typst?branch=main#981c578ff9f1ef33a9ab00bc0ecf8fcacabc156f"
+source = "git+https://github.com/typst/typst?branch=main#b51cb131bdfff327eadf5cfcb33e938b04363945"
 dependencies = [
  "bitflags",
  "bytemuck",
  "comemo",
  "ecow",
  "flate2",
- "fontdb",
  "if_chain",
  "image",
  "indexmap",
@@ -3854,7 +3827,7 @@ dependencies = [
 [[package]]
 name = "typst-library"
 version = "0.2.0"
-source = "git+https://github.com/typst/typst?branch=main#981c578ff9f1ef33a9ab00bc0ecf8fcacabc156f"
+source = "git+https://github.com/typst/typst?branch=main#b51cb131bdfff327eadf5cfcb33e938b04363945"
 dependencies = [
  "chinese-number",
  "comemo",
@@ -3885,7 +3858,7 @@ dependencies = [
 [[package]]
 name = "typst-macros"
 version = "0.2.0"
-source = "git+https://github.com/typst/typst?branch=main#981c578ff9f1ef33a9ab00bc0ecf8fcacabc156f"
+source = "git+https://github.com/typst/typst?branch=main#b51cb131bdfff327eadf5cfcb33e938b04363945"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
@@ -3993,12 +3966,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1dd624098567895118886609431a7c3b8f516e41d30e0643f03d94592a147e36"
 
 [[package]]
-name = "unicode-vo"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1d386ff53b415b7fe27b50bb44679e2cc4660272694b7b6f3326d8480823a94"
-
-[[package]]
 name = "unicode-xid"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4032,20 +3999,14 @@ dependencies = [
  "data-url",
  "flate2",
  "float-cmp",
- "fontdb",
  "kurbo",
  "log",
  "pico-args",
  "rctree",
  "roxmltree",
- "rustybuzz",
  "simplecss",
  "siphasher",
  "svgtypes",
- "ttf-parser 0.15.2",
- "unicode-bidi",
- "unicode-script",
- "unicode-vo",
 ]
 
 [[package]]
