@@ -29,7 +29,7 @@
 
   const update = async (updateHash: string, updateScale: number) => {
     // return
-    const res: TypstRenderResponse = await render(page, updateScale);
+    const res: TypstRenderResponse = await render(page, updateScale * window.devicePixelRatio);
 
     const img = new Image(res.width, res.height);
     img.src = "data:image/png;base64," + res.image;
@@ -38,10 +38,10 @@
       // TODO: Cancel pending renders? Accept in-order renders?
       if (hash === updateHash && scale === updateScale) {
         const ctx = canvas.getContext("2d");
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = width * window.devicePixelRatio;
+        canvas.height = height * window.devicePixelRatio;
 
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, width * window.devicePixelRatio, height * window.devicePixelRatio);
       }
     };
   };
