@@ -1,20 +1,14 @@
 use super::{Error, Result};
 use crate::ipc::commands::project_path;
-use crate::ipc::model::TypstCompileEvent;
-use crate::ipc::{TypstDocument, TypstSourceError};
 use crate::project::ProjectManager;
 use enumset::EnumSetType;
 use serde::Serialize;
-use siphasher::sip128::{Hasher128, SipHasher};
 use std::fs;
 use std::fs::{File, OpenOptions};
-use std::hash::Hash;
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{Runtime, State, Window};
-use typst::syntax::ErrorPos;
-use typst::World;
 
 #[derive(Serialize, Debug)]
 pub struct FileItem {
@@ -98,71 +92,10 @@ pub async fn fs_write_file_text<R: Runtime>(
         .map(|mut f| f.write_all(content.as_bytes()))
         .map_err(Into::<Error>::into)?;
 
-    // TODO: Move this logic somewhere else
     let mut world = project.world.lock().unwrap();
-    let source_id = world
+    let _ = world
         .slot_update(path.as_path(), Some(content))
-        .expect("Update failed");
-    world.set_main(source_id);
-
-    println!("compiling: {:?}", path);
-    match typst::compile(&*world) {
-        Ok(doc) => {
-            let pages = doc.pages.len();
-
-            let mut hasher = SipHasher::new();
-            doc.hash(&mut hasher);
-            let hash = hex::encode(hasher.finish128().as_bytes());
-
-            // Assume all pages have the same size
-            // TODO: Improve this?
-            let first_page = &doc.pages[0];
-            let width = first_page.width();
-            let height = first_page.height();
-
-            project.cache.write().unwrap().document = Some(doc);
-
-            let _ = window.emit(
-                "typst_compile",
-                TypstCompileEvent {
-                    document: Some(TypstDocument {
-                        pages,
-                        hash,
-                        width: width.to_pt(),
-                        height: height.to_pt(),
-                    }),
-                    errors: None,
-                },
-            );
-        }
-        Err(errors) => {
-            println!("compile error: {:?}", errors);
-
-            let source = world.source(source_id);
-            let errors: Vec<TypstSourceError> = errors
-                .iter()
-                .filter(|e| e.span.source() == source_id)
-                .map(|e| {
-                    let span = source.range(e.span);
-                    let range = match e.pos {
-                        ErrorPos::Full => span,
-                        ErrorPos::Start => span.start..span.start,
-                        ErrorPos::End => span.end..span.end,
-                    };
-                    let message = e.message.to_string();
-                    TypstSourceError { range, message }
-                })
-                .collect();
-
-            let _ = window.emit(
-                "typst_compile",
-                TypstCompileEvent {
-                    document: None,
-                    errors: Some(errors),
-                },
-            );
-        }
-    }
+        .map_err(Into::<Error>::into)?;
 
     Ok(())
 }

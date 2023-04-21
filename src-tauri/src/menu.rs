@@ -12,9 +12,10 @@ pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
                 if let Some(path) = path {
                     let window = e.window();
                     let project_manager: State<'_, Arc<ProjectManager<_>>> = window.state();
+                    let path_clone = path.clone();
                     let project = Arc::new(Project {
                         root: path,
-                        world: ProjectWorld::new().into(),
+                        world: ProjectWorld::new(path_clone).into(),
                         cache: RwLock::new(Default::default()),
                     });
                     project_manager.set_project(window, Some(project));

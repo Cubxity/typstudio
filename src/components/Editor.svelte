@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { editor as editorType } from "monaco-editor";
+  import throttle from "lodash/throttle";
   import debounce from "lodash/debounce";
 
   import { initMonaco } from "../lib/editor/monaco";
   import type { TypstCompileEvent } from "../lib/ipc";
-  import { readFileText, writeFileText } from "../lib/ipc";
+  import { compile, readFileText, writeFileText } from "../lib/ipc";
   import { appWindow } from "@tauri-apps/api/window";
   import ICodeEditor = editorType.ICodeEditor;
   import IModelContentChangedEvent = editorType.IModelContentChangedEvent;
@@ -17,7 +18,15 @@
 
   export let path: string;
 
-  const handleUpdate = () => {
+  const handleCompile = () => {
+    const model = editor.getModel();
+    if (model) {
+      // Removing the preceding slash
+      const path = model.uri.path.substring(1);
+      compile(path, model.getValue());
+    }
+  };
+  const handleSave = () => {
     const model = editor.getModel();
     if (model) {
       // Removing the preceding slash
@@ -25,7 +34,9 @@
       writeFileText(path, model.getValue());
     }
   };
-  const handleUpdateDebounce = debounce(handleUpdate, 100, { maxWait: 300 });
+
+  const handleCompileThrottle = throttle(handleCompile, 100);
+  const handleSaveDebounce = debounce(handleSave, 1000, { maxWait: 5000 });
 
   onMount(async () => {
     const EditorWorker = await import("monaco-editor/esm/vs/editor/editor.worker?worker");
@@ -46,7 +57,10 @@
     });
 
     editor.onDidChangeModelContent((e: IModelContentChangedEvent) => {
-      handleUpdateDebounce();
+      // Compile will update the source file directly in the memory without
+      // writing to the file system first, this will reduce the preview delay.
+      handleCompileThrottle();
+      handleSaveDebounce();
     });
 
     return () => {
@@ -85,7 +99,7 @@
 
     // Prevent further updates and immediately flush pending updates
     editor.updateOptions({ readOnly: true });
-    handleUpdateDebounce.flush();
+    handleSaveDebounce.flush();
 
     editor.getModel()?.dispose();
 

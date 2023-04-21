@@ -15,7 +15,8 @@ use typst::util::Buffer;
 use typst::World;
 
 pub struct ProjectWorld {
-    pub engine: Arc<TypstEngine>,
+    root: PathBuf,
+    engine: Arc<TypstEngine>,
 
     /// Map of source ids, identified by the canonical path.
     paths: RefCell<HashMap<PathBuf, FileResult<SourceId>>>,
@@ -80,8 +81,9 @@ impl ProjectWorld {
         Ok(id)
     }
 
-    pub fn new() -> Self {
+    pub fn new(root: PathBuf) -> Self {
         Self {
+            root,
             engine: Arc::new(TypstEngine::new()),
             paths: RefCell::default(),
             sources: Default::default(),
@@ -116,6 +118,16 @@ impl World for ProjectWorld {
     }
 
     fn file(&self, path: &Path) -> FileResult<Buffer> {
+        let path = self
+            .root
+            .join(path)
+            .canonicalize()
+            .map_err(|_| FileError::AccessDenied)?;
+
+        if !path.starts_with(&self.root) {
+            return Err(FileError::AccessDenied);
+        }
+
         fs::read(&path)
             .map(Buffer::from)
             .map_err(|e| FileError::from_io(e, path.as_ref()))

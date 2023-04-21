@@ -51,7 +51,7 @@ pub fn project_path<R: Runtime>(
     let rel_path = project.root.join(path);
 
     // This will resolve symlinks and reject resolved files outside the project's root
-    let path = rel_path.canonicalize().unwrap_or(rel_path);
+    let path = rel_path.canonicalize().map_err(|_| Error::UnrelatedPath)?;
     if !path.starts_with(&project.root) {
         return Err(Error::UnrelatedPath);
     }
