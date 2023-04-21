@@ -224,6 +224,10 @@
       "foreground": "ffffff",
       "token": "punctuation.definition.heading.typst",
       "fontStyle": "bold"
+    },
+    {
+      "foreground": "f1fa8c",
+      "token": "meta.math.typst"
     }
   ],
   "colors": {

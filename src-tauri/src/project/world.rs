@@ -30,7 +30,7 @@ pub struct ProjectWorld {
 }
 
 impl ProjectWorld {
-    pub fn slot_update(&mut self, path: &Path) -> FileResult<SourceId> {
+    pub fn slot_update(&mut self, path: &Path, content: Option<String>) -> FileResult<SourceId> {
         let canonical = path.canonicalize().unwrap_or_else(|_| path.into());
         let mut paths = self.paths.borrow_mut();
         match paths.entry(canonical.clone()) {
@@ -38,14 +38,14 @@ impl ProjectWorld {
                 Ok(id) => {
                     let sources = self.sources.as_mut();
                     let src = &mut sources[id.clone().into_u16() as usize];
-                    if let Ok(content) = fs::read_to_string(&path) {
+                    if let Ok(content) = content.ok_or_else(|| fs::read_to_string(&path).ok()) {
                         src.replace(content)
                     }
                     Ok(id.clone())
                 }
-                Err(_) => o.insert(self.insert(&canonical)).clone(),
+                Err(_) => o.insert(self.insert(&canonical, content)).clone(),
             },
-            Entry::Vacant(v) => v.insert(self.insert(&canonical)).clone(),
+            Entry::Vacant(v) => v.insert(self.insert(&canonical, content)).clone(),
         }
     }
 
@@ -62,13 +62,15 @@ impl ProjectWorld {
         let mut paths = self.paths.borrow_mut();
         paths
             .entry(canonical.clone())
-            .or_insert_with(|| self.insert(&canonical))
+            .or_insert_with(|| self.insert(&canonical, None))
             .clone()
     }
 
-    fn insert<P: AsRef<Path>>(&self, path: P) -> FileResult<SourceId> {
-        let content =
-            fs::read_to_string(&path).map_err(|e| FileError::from_io(e, path.as_ref()))?;
+    fn insert<P: AsRef<Path>>(&self, path: P, content: Option<String>) -> FileResult<SourceId> {
+        let content = match content {
+            Some(content) => content,
+            None => fs::read_to_string(&path).map_err(|e| FileError::from_io(e, path.as_ref()))?,
+        };
 
         let sources = &self.sources;
         let id = SourceId::from_u16(sources.len() as u16);

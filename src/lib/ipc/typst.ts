@@ -23,5 +23,33 @@ export interface TypstRenderResponse {
   height: number;
 }
 
+export enum TypstCompletionKind {
+  Syntax = 1,
+  Function = 2,
+  Parameter = 3,
+  Constant = 4,
+  Symbol = 5,
+}
+
+export interface TypstCompletion {
+  kind: TypstCompletionKind;
+  label: string;
+  apply: string | null;
+  detail: string | null;
+}
+
+export interface TypstCompleteResponse {
+  offset: number;
+  completions: TypstCompletion[];
+}
+
 export const render = (page: number, scale: number): Promise<TypstRenderResponse> =>
   invoke<TypstRenderResponse>("typst_render", { page, scale });
+
+export const autocomplete = (
+  path: string,
+  content: string,
+  offset: number,
+  explicit: boolean
+): Promise<TypstCompleteResponse> =>
+  invoke<TypstCompleteResponse>("typst_autocomplete", { path, content, offset, explicit });

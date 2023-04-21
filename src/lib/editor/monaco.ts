@@ -5,8 +5,11 @@ import { Registry } from "vscode-textmate";
 
 import { wireTextMateGrammars } from "./grammar";
 import bibtex from "./lang/bibtex.json";
+import typstConfig from "./lang/typst-config.json";
 import typstTm from "./lang/typst-tm.json";
 import theme from "./theme/theme.json";
+
+import { TypstCompletionProvider } from "$lib/editor/completion";
 
 type IMonarchLanguage = monaco.languages.IMonarchLanguage;
 
@@ -29,11 +32,18 @@ export const initMonaco = (async () => {
   grammars.set("typst", "source.typst");
 
   monaco.languages.register({ id: "typst", extensions: ["typ"] });
+  monaco.languages.setLanguageConfiguration(
+    "typst",
+    typstConfig as unknown as monaco.languages.LanguageConfiguration
+  );
   await wireTextMateGrammars(registry, { typst: "source.typst" });
 
   // Register Monarch languages
   monaco.languages.register({ id: "bibtex", extensions: ["bib"] });
   monaco.languages.setMonarchTokensProvider("bibtex", bibtex as IMonarchLanguage);
+
+  // Register completion providers
+  monaco.languages.registerCompletionItemProvider("typst", new TypstCompletionProvider());
 
   monaco.editor.defineTheme("dracula", theme as monaco.editor.IStandaloneThemeData);
   monaco.editor.setTheme("dracula");

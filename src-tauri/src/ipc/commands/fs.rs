@@ -1,7 +1,8 @@
 use super::{Error, Result};
+use crate::ipc::commands::project_path;
 use crate::ipc::model::TypstCompileEvent;
 use crate::ipc::{TypstDocument, TypstSourceError};
-use crate::project::{Project, ProjectManager};
+use crate::project::ProjectManager;
 use enumset::EnumSetType;
 use serde::Serialize;
 use siphasher::sip128::{Hasher128, SipHasher};
@@ -27,27 +28,6 @@ pub struct FileItem {
 pub enum FileType {
     File,
     Directory,
-}
-
-/// Retrieves the project and resolves the path. Furthermore,
-/// this function will resolve the path relative to project's root
-/// and checks whether the path belongs to the project root.
-fn project_path<R: Runtime>(
-    window: &Window<R>,
-    project_manager: &State<Arc<ProjectManager<R>>>,
-    path: PathBuf,
-) -> Result<(Arc<Project>, PathBuf)> {
-    let project = project_manager
-        .get_project(&window)
-        .ok_or(Error::UnknownProject)?;
-    let rel_path = project.root.join(path);
-
-    // This will resolve symlinks and reject resolved files outside the project's root
-    let path = rel_path.canonicalize().unwrap_or(rel_path);
-    if !path.starts_with(&project.root) {
-        return Err(Error::UnrelatedPath);
-    }
-    Ok((project, path))
 }
 
 /// Reads raw bytes from a specified path.
@@ -120,13 +100,14 @@ pub async fn fs_write_file_text<R: Runtime>(
 
     // TODO: Move this logic somewhere else
     let mut world = project.world.lock().unwrap();
-    let source_id = world.slot_update(path.as_path()).expect("Update failed");
+    let source_id = world
+        .slot_update(path.as_path(), Some(content))
+        .expect("Update failed");
     world.set_main(source_id);
 
     println!("compiling: {:?}", path);
     match typst::compile(&*world) {
         Ok(doc) => {
-            println!("compiled: {:?}", doc);
             let pages = doc.pages.len();
 
             let mut hasher = SipHasher::new();
