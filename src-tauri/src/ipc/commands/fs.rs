@@ -96,6 +96,17 @@ pub async fn fs_create_file<R: Runtime>(
 }
 
 #[tauri::command]
+pub async fn fs_write_file_binary<R: Runtime>(
+    window: Window<R>,
+    project_manager: State<'_, Arc<ProjectManager<R>>>,
+    path: PathBuf,
+    content: Vec<u8>,
+) -> Result<()> {
+    let (_, path) = project_path(&window, &project_manager, path)?;
+    fs::write(&path, content).map_err(Into::into)
+}
+
+#[tauri::command]
 pub async fn fs_write_file_text<R: Runtime>(
     window: Window<R>,
     project_manager: State<'_, Arc<ProjectManager<R>>>,

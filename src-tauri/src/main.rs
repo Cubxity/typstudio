@@ -29,6 +29,7 @@ async fn main() {
             ipc::commands::fs_read_file_binary,
             ipc::commands::fs_read_file_text,
             ipc::commands::fs_create_file,
+            ipc::commands::fs_write_file_binary,
             ipc::commands::fs_write_file_text,
             ipc::commands::typst_render
         ])
