@@ -66,9 +66,7 @@ pub async fn typst_compile<R: Runtime>(
     path: PathBuf,
     content: String,
 ) -> Result<()> {
-    let project = project_manager
-        .get_project(&window)
-        .ok_or(Error::UnknownProject)?;
+    let (project, path) = project_path(&window, &project_manager, path)?;
 
     let mut world = project.world.lock().unwrap();
     let source_id = world

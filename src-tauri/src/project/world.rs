@@ -32,9 +32,8 @@ pub struct ProjectWorld {
 
 impl ProjectWorld {
     pub fn slot_update(&mut self, path: &Path, content: Option<String>) -> FileResult<SourceId> {
-        let canonical = path.canonicalize().unwrap_or_else(|_| path.into());
         let mut paths = self.paths.borrow_mut();
-        match paths.entry(canonical.clone()) {
+        match paths.entry(path.to_path_buf()) {
             Entry::Occupied(mut o) => match o.get() {
                 Ok(id) => {
                     let sources = self.sources.as_mut();
@@ -44,9 +43,9 @@ impl ProjectWorld {
                     }
                     Ok(id.clone())
                 }
-                Err(_) => o.insert(self.insert(&canonical, content)).clone(),
+                Err(_) => o.insert(self.insert(path, content)).clone(),
             },
-            Entry::Vacant(v) => v.insert(self.insert(&canonical, content)).clone(),
+            Entry::Vacant(v) => v.insert(self.insert(path, content)).clone(),
         }
     }
 
@@ -58,12 +57,18 @@ impl ProjectWorld {
     /// Inserting a new one will assign a source id and will
     /// load the file's content from the file system.
     fn slot(&self, path: &Path) -> FileResult<SourceId> {
-        // TODO: File access check? Only allow access to files under the project root by default
-        let canonical = path.canonicalize().unwrap_or_else(|_| path.into());
+        let path = self
+            .root
+            .join(path)
+            .canonicalize()
+            .map_err(|_| FileError::NotFound(path.into()))?;
+        if !path.starts_with(&self.root) {
+            return Err(FileError::AccessDenied);
+        }
         let mut paths = self.paths.borrow_mut();
         paths
-            .entry(canonical.clone())
-            .or_insert_with(|| self.insert(&canonical, None))
+            .entry(path.clone())
+            .or_insert_with(|| self.insert(&path, None))
             .clone()
     }
 
@@ -122,7 +127,7 @@ impl World for ProjectWorld {
             .root
             .join(path)
             .canonicalize()
-            .map_err(|_| FileError::AccessDenied)?;
+            .map_err(|_| FileError::NotFound(path.into()))?;
 
         if !path.starts_with(&self.root) {
             return Err(FileError::AccessDenied);

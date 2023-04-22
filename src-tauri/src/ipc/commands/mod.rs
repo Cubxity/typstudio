@@ -6,6 +6,7 @@ pub use fs::*;
 
 use crate::project::{Project, ProjectManager};
 use ::typst::diag::FileError;
+use ::typst::util::PathExt;
 use serde::{Serialize, Serializer};
 use std::io;
 use std::path::PathBuf;
@@ -51,7 +52,9 @@ pub fn project_path<R: Runtime>(
     let rel_path = project.root.join(path);
 
     // This will resolve symlinks and reject resolved files outside the project's root
-    let path = rel_path.canonicalize().map_err(|_| Error::UnrelatedPath)?;
+    let path = rel_path
+        .canonicalize()
+        .unwrap_or_else(|_| rel_path.normalize());
     if !path.starts_with(&project.root) {
         return Err(Error::UnrelatedPath);
     }

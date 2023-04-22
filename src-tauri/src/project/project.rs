@@ -110,8 +110,7 @@ impl<R: Runtime> ProjectManager<R> {
                 _ => None,
             },
             _ => None,
-        }
-        .map(|p| p.canonicalize().unwrap_or(p.clone()));
+        };
 
         if let Some(path) = path {
             let projects = self.projects.read().unwrap();
