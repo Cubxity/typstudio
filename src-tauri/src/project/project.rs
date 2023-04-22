@@ -1,5 +1,6 @@
 use crate::ipc::{FSRefreshEvent, ProjectChangeEvent, ProjectModel};
 use crate::project::ProjectWorld;
+use log::{error, info};
 use notify::event::ModifyKind;
 use notify::{Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use std::collections::HashMap;
@@ -46,7 +47,7 @@ impl<R: Runtime> ProjectManager<R> {
             while let Some(res) = rx.recv().await {
                 match res {
                     Ok(event) => project_manager.handle_fs_event(event),
-                    Err(e) => println!("watch error: {:?}", e),
+                    Err(e) => error!("watch error {:?}", e),
                 }
             }
         });
@@ -90,11 +91,16 @@ impl<R: Runtime> ProjectManager<R> {
                 }
             }
         };
+
+        info!(
+            "project set for window {}: {:?}",
+            window.label(),
+            model.as_ref().map(|m| &m.root)
+        );
         let _ = window.emit("project_changed", ProjectChangeEvent { project: model });
     }
 
     fn handle_fs_event(&self, event: notify::Event) {
-        println!("event: {:?}", event);
         let path = match event.kind {
             EventKind::Create(_) | EventKind::Remove(_) => {
                 event.paths[0].parent().map(|p| p.to_path_buf())
@@ -108,7 +114,6 @@ impl<R: Runtime> ProjectManager<R> {
         .map(|p| p.canonicalize().unwrap_or(p.clone()));
 
         if let Some(path) = path {
-            println!("path: {:?}", path);
             let projects = self.projects.read().unwrap();
 
             for (window, project) in &*projects {

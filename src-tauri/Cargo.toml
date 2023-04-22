@@ -29,6 +29,8 @@ elsa = "1.8"
 hex = "0.4"
 base64 = "0.21"
 notify = "5.1"
+log = "0.4"
+env_logger = "0.10"
 
 # Pinned to an old revision due to https://github.com/typst/typst/issues/930
 typst = { git = "https://github.com/typst/typst", rev = "bce83d3" }

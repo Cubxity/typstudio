@@ -10,11 +10,16 @@ mod project;
 
 use crate::menu::handle_menu_event;
 use crate::project::ProjectManager;
+use env_logger::Env;
+use log::info;
 use std::sync::Arc;
 use tauri::{CustomMenuItem, Menu, Submenu, Wry};
 
 #[tokio::main]
 async fn main() {
+    env_logger::init_from_env(Env::default().default_filter_or("info"));
+    info!("initializing typstudio");
+
     let project_manager = Arc::new(ProjectManager::<Wry>::new());
     if let Ok(watcher) = ProjectManager::init_watcher(project_manager.clone()) {
         let _ = project_manager.set_watcher(watcher);

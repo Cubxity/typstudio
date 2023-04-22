@@ -4,12 +4,14 @@ use crate::ipc::model::TypstRenderResponse;
 use crate::ipc::{TypstCompileEvent, TypstDocument, TypstSourceError};
 use crate::project::ProjectManager;
 use base64::Engine;
+use log::debug;
 use serde::Serialize;
 use serde_repr::Serialize_repr;
 use siphasher::sip128::{Hasher128, SipHasher};
 use std::hash::Hash;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Instant;
 use tauri::Runtime;
 use typst::geom::Color;
 use typst::ide::{Completion, CompletionKind};
@@ -76,9 +78,17 @@ pub async fn typst_compile<R: Runtime>(
     // TODO: Configurable main
     world.set_main(source_id);
 
-    println!("compiling: {:?}", path);
+    debug!("compiling: {:?}", path);
+    let now = Instant::now();
     match typst::compile(&*world) {
         Ok(doc) => {
+            let elapsed = now.elapsed();
+            debug!(
+                "compilation succeeded for {:?} in {:?} ms",
+                path,
+                elapsed.as_millis()
+            );
+
             let pages = doc.pages.len();
 
             let mut hasher = SipHasher::new();
@@ -107,7 +117,7 @@ pub async fn typst_compile<R: Runtime>(
             );
         }
         Err(errors) => {
-            println!("compile error: {:?}", errors);
+            debug!("compilation failed with {:?} errors", errors.len());
 
             let source = world.source(source_id);
             let errors: Vec<TypstSourceError> = errors
@@ -145,16 +155,22 @@ pub async fn typst_render<R: Runtime>(
     page: usize,
     scale: f32,
 ) -> Result<TypstRenderResponse> {
-    println!("rendering page: {}", page);
+    debug!("rendering page {} @{}x", page, scale);
     let project = project_manager
         .get_project(&window)
         .ok_or(Error::UnknownProject)?;
 
     let cache = project.cache.read().unwrap();
     if let Some(frame) = cache.document.as_ref().and_then(|doc| doc.pages.get(page)) {
+        let now = Instant::now();
         let bmp = typst::export::render(frame, scale, Color::WHITE);
         if let Ok(image) = bmp.encode_png() {
-            println!("render complete for page: {}", page);
+            let elapsed = now.elapsed();
+            debug!(
+                "rendering complete for page {} in {} ms",
+                page,
+                elapsed.as_millis()
+            );
             let b64 = base64::engine::general_purpose::STANDARD.encode(image);
             return Ok(TypstRenderResponse {
                 image: b64,
