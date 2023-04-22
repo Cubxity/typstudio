@@ -30,8 +30,9 @@ hex = "0.4"
 base64 = "0.21"
 notify = "5.1"
 
-typst = { git = "https://github.com/typst/typst", branch = "main" }
-typst-library = { git = "https://github.com/typst/typst", branch = "main" }
+# Pinned to an old revision due to https://github.com/typst/typst/issues/930
+typst = { git = "https://github.com/typst/typst", rev = "bce83d3" }
+typst-library = { git = "https://github.com/typst/typst", rev = "bce83d3" }
 comemo = "0.2"
 
 [features]
