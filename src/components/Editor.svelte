@@ -11,6 +11,7 @@
   import ICodeEditor = editorType.ICodeEditor;
   import IModelContentChangedEvent = editorType.IModelContentChangedEvent;
   import IMarkerData = editorType.IMarkerData;
+  import { paste } from "$lib/ipc/clipboard";
 
   let divEl: HTMLDivElement;
   let editor: ICodeEditor;
@@ -123,7 +124,28 @@
     }
   };
 
+  const handlePaste = async (event: ClipboardEvent) => {
+    const text = event.clipboardData?.getData("text");
+    if (text === "") {
+      // Could be an image or something else
+      // TODO: Check if this workaround is required on Windows
+      event.preventDefault();
+      const res = await paste();
+
+      const range = editor.getSelection();
+      const model = editor.getModel();
+      if (range && model) {
+        model.pushEditOperations([], [
+          {
+            range: range,
+            text: `\n#figure(\n  image("${res.path}"),\n  caption: []\n)\n`
+          }
+        ], () => null);
+      }
+    }
+  };
+
   $: fetchContent(editor, path);
 </script>
 
-<div bind:this={divEl} class={$$props.class}></div>
+<div bind:this={divEl} on:paste={handlePaste} class={$$props.class}></div>

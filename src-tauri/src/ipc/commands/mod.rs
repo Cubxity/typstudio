@@ -1,7 +1,9 @@
+mod clipboard;
 mod fs;
 mod typst;
 
 pub use self::typst::*;
+pub use clipboard::*;
 pub use fs::*;
 
 use crate::project::{Project, ProjectManager};
