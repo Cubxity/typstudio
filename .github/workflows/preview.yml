@@ -37,5 +37,5 @@ jobs:
           tagName: v__VERSION__-preview # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "Development Build v__VERSION__"
           releaseBody: "This is a development release from the master branch."
-          releaseDraft: true
+          releaseDraft: false
           prerelease: true
