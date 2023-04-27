@@ -39,7 +39,8 @@ async fn main() {
             ipc::commands::typst_compile,
             ipc::commands::typst_render,
             ipc::commands::typst_autocomplete,
-            ipc::commands::clipboard_paste
+            ipc::commands::clipboard_paste,
+            ipc::commands::fs_create_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

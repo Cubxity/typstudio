@@ -1,12 +1,11 @@
 <script lang="ts">
-
   import clsx from "clsx";
   import ExplorerNode from "./ExplorerNode.svelte";
   import AddIcon from "./icons/AddIcon.svelte";
   import { project, shell } from "$lib/stores";
-  import { createFile } from "$lib/ipc";
+  import { createFile, createFolder } from "$lib/ipc";
 
-  const handleCreate = () => {
+  const handleCreateFile = () => {
     shell.createModal({
       type: "input",
       title: "Create file",
@@ -14,7 +13,18 @@
         if (path) {
           createFile(path);
         }
-      }
+      },
+    });
+  };
+  const handleCreateFolder = () => {
+    shell.createModal({
+      type: "input",
+      title: "Create folder",
+      callback: (path) => {
+        if (path) {
+          createFolder(path);
+        }
+      },
     });
   };
 </script>
@@ -23,9 +33,21 @@
   {#if $project}
     <div class="flex flex-row mx-2 mt-1 mb-3 items-center">
       <span class="text-lg font-bold block flex-1">Project</span>
-      <div class="flex flex-row rounded-md border border-neutral-700 overflow-clip">
-        <button class="p-1 transition-colors hover:bg-neutral-700" on:click={handleCreate}>
+      <div class="flex flex-row rounded-md border border-neutral-700 overflow-clip mr-2">
+        <button class="p-1 transition-colors hover:bg-neutral-700" on:click={handleCreateFile}>
           <AddIcon class="w-4 h-4" />
+        </button>
+      </div>
+      <!--
+        TODO: Replace with icon, the solution is temporary
+      -->
+      <div class="flex flex-row rounded-md border border-neutral-700 overflow-clip">
+        <button
+          class="flex items-center gap-2 p-1 transition-colors hover:bg-neutral-700"
+          on:click={handleCreateFolder}
+        >
+          <AddIcon class="w-4 h-4" />
+          Folder
         </button>
       </div>
     </div>

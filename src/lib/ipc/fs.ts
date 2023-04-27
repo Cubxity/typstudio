@@ -24,6 +24,8 @@ export const readFileText = (path: string): Promise<string> =>
   invoke<string>("fs_read_file_text", { path });
 
 export const createFile = (path: string): Promise<never> => invoke("fs_create_file", { path });
+export const createFolder = (path: string): Promise<never> => invoke("fs_create_folder", { path });
+
 
 export const writeFileText = (path: string, content: string): Promise<string> =>
   invoke("fs_write_file_text", { path, content });
