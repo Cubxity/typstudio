@@ -4,6 +4,7 @@
   import AddIcon from "./icons/AddIcon.svelte";
   import { project, shell } from "$lib/stores";
   import { createFile, createFolder } from "$lib/ipc";
+  import CreateNewFolder from "./icons/CreateNewFolder.svelte";
 
   const handleCreateFile = () => {
     shell.createModal({
@@ -42,12 +43,8 @@
         TODO: Replace with icon, the solution is temporary
       -->
       <div class="flex flex-row rounded-md border border-neutral-700 overflow-clip">
-        <button
-          class="flex items-center gap-2 p-1 transition-colors hover:bg-neutral-700"
-          on:click={handleCreateFolder}
-        >
-          <AddIcon class="w-4 h-4" />
-          Folder
+        <button class="p-1 transition-colors hover:bg-neutral-700" on:click={handleCreateFolder}>
+          <CreateNewFolder class="w-4 h-4" />
         </button>
       </div>
     </div>
