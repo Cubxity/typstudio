@@ -1,14 +1,19 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { writable } from "svelte/store";
   import type { Modal } from "../lib/stores";
   import { shell } from "../lib/stores";
   import CloseIcon from "./icons/CloseIcon.svelte";
 
   let modal: Modal | undefined;
   $: modal = $shell.modals[0];
+  $: text = writable(modal?.type === "input" ? modal.initialText : "");
 
   const handleClose = (cancel: boolean = true) => {
     if (cancel && modal?.type === "input") {
       modal.callback(null);
+    } else if (cancel && modal?.type === "confirm") {
+      modal.callback(true);
     }
     shell.popModal();
   };
@@ -23,6 +28,12 @@
         handleClose();
         break;
     }
+  };
+  const handleConfirm = (event: MouseEvent) => {
+    if (modal?.type === "confirm") {
+      modal.callback(false);
+    }
+    handleClose(false);
   };
 </script>
 
@@ -45,8 +56,16 @@
         <input
           class="w-full rounded-md bg-neutral-600 px-2 py-1 mt-2 text-sm"
           on:keyup={handleInputKeyUp}
+          bind:value={$text}
           autofocus
-        >
+        />
+      {:else if modal.type === "confirm"}
+        <div class="flex justify-between mt-3">
+          <button on:click={handleClose} class="rounded-md border-2 border-neutral-700 px-2 py-1"
+            >Cancel</button
+          >
+          <button on:click={handleConfirm} class="rounded-md px-5 py-1 bg-red-500">Ok</button>
+        </div>
       {/if}
     </div>
   </div>

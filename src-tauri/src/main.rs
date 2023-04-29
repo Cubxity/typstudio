@@ -34,13 +34,14 @@ async fn main() {
             ipc::commands::fs_read_file_binary,
             ipc::commands::fs_read_file_text,
             ipc::commands::fs_create_file,
+            ipc::commands::fs_create_folder,
+            ipc::commands::fs_delete,
             ipc::commands::fs_write_file_binary,
             ipc::commands::fs_write_file_text,
             ipc::commands::typst_compile,
             ipc::commands::typst_render,
             ipc::commands::typst_autocomplete,
             ipc::commands::clipboard_paste,
-            ipc::commands::fs_create_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

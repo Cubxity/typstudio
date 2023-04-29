@@ -18,10 +18,14 @@ export interface BaseModal {
 export interface InputModal extends BaseModal {
   type: "input";
   placeholder?: string;
+  initialText?: string;
   callback: (content: string | null) => void;
 }
-
-export type Modal = InputModal;
+export interface ConfirmModal extends BaseModal {
+  type: "confirm",
+  callback: (canceled: boolean) => void
+}
+export type Modal = InputModal | ConfirmModal;
 
 const createShell = () => {
   const { subscribe, set, update } = writable<Shell>({
