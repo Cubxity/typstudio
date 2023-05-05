@@ -28,8 +28,13 @@
   };
 
   const update = async (updateHash: string, updateScale: number) => {
-    // return
-    const res: TypstRenderResponse = await render(page, updateScale);
+      // return
+    // adjust dimensions to account for device pixel ratio
+    const densityWidth = Math.floor(width * window.devicePixelRatio);
+    const densityHeight = Math.floor(height * window.devicePixelRatio);
+    const densityScale = Math.floor(updateScale * window.devicePixelRatio);
+    
+    const res: TypstRenderResponse = await render(page, densityScale);
 
     const img = new Image(res.width, res.height);
     img.src = "data:image/png;base64," + res.image;
@@ -38,10 +43,11 @@
       // TODO: Cancel pending renders? Accept in-order renders?
       if (hash === updateHash && scale === updateScale) {
         const ctx = canvas.getContext("2d");
-        canvas.width = width;
-        canvas.height = height;
+        
+        canvas.width = densityWidth;
+        canvas.height = densityHeight;
 
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, densityWidth, densityHeight);
       }
     };
   };
