@@ -34,8 +34,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__-${{ github.sha }} # the action automatically replaces \_\_VERSION\_\_ with the app version
-          releaseName: "Development Build v__VERSION__"
+          tagName: v__VERSION__-dev.${{ github.run_number }} # the action automatically replaces \_\_VERSION\_\_ with the app version
+          releaseName: "Development Build v__VERSION__-dev.${{ github.run_number }}"
           releaseBody: "This is a development release from the master branch (Commit ${{ github.sha }})."
           releaseDraft: false
           prerelease: true
