@@ -12,6 +12,8 @@
   let canvas: HTMLCanvasElement;
   let canRender = false;
   let isIntersecting = false;
+  let nonce = 1;
+  let lastNonce = 0;
 
   onMount(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -28,22 +30,22 @@
   };
 
   const update = async (updateHash: string, updateScale: number) => {
-      // return
+    // return
     // adjust dimensions to account for device pixel ratio
     const densityWidth = Math.floor(width * window.devicePixelRatio);
     const densityHeight = Math.floor(height * window.devicePixelRatio);
     const densityScale = Math.floor(updateScale * window.devicePixelRatio);
-    
-    const res: TypstRenderResponse = await render(page, densityScale);
+
+    const res: TypstRenderResponse = await render(page, densityScale, nonce++);
 
     const img = new Image(res.width, res.height);
     img.src = "data:image/png;base64," + res.image;
     img.onload = () => {
       // Prevent out-of-order rendering
-      // TODO: Cancel pending renders? Accept in-order renders?
-      if (hash === updateHash && scale === updateScale) {
+      if (res.nonce > lastNonce) {
+        lastNonce = res.nonce;
         const ctx = canvas.getContext("2d");
-        
+
         canvas.width = densityWidth;
         canvas.height = densityHeight;
 

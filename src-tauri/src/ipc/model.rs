@@ -27,6 +27,7 @@ pub struct TypstRenderResponse {
     pub image: String,
     pub width: u32,
     pub height: u32,
+    pub nonce: u32,
 }
 
 #[derive(Serialize, Clone, Debug)]

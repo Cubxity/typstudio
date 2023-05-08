@@ -152,6 +152,7 @@ pub async fn typst_render<R: Runtime>(
     project_manager: tauri::State<'_, Arc<ProjectManager<R>>>,
     page: usize,
     scale: f32,
+    nonce: u32,
 ) -> Result<TypstRenderResponse> {
     debug!("rendering page {} @{}x", page, scale);
     let project = project_manager
@@ -174,6 +175,7 @@ pub async fn typst_render<R: Runtime>(
                 image: b64,
                 width: bmp.width(),
                 height: bmp.height(),
+                nonce,
             });
         }
     }
