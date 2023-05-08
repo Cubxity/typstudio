@@ -30,7 +30,7 @@
 
   onMount(() => {
     return appWindow.listen<FSRefreshEvent>("fs_refresh", ({ payload }) => {
-      if (payload.path === path) update();
+      if (`./${payload.path}` === path) update();
     });
   });
 
