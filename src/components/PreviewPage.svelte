@@ -30,11 +30,10 @@
   };
 
   const update = async (updateHash: string, updateScale: number) => {
-    // return
     // adjust dimensions to account for device pixel ratio
     const densityWidth = Math.floor(width * window.devicePixelRatio);
     const densityHeight = Math.floor(height * window.devicePixelRatio);
-    const densityScale = Math.floor(updateScale * window.devicePixelRatio);
+    const densityScale = updateScale * window.devicePixelRatio;
 
     const res: TypstRenderResponse = await render(page, densityScale, nonce++);
 
