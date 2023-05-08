@@ -36,7 +36,7 @@ pub struct ProjectChangeEvent {
 
 #[derive(Serialize, Clone, Debug)]
 pub struct ProjectModel {
-    pub root: String,
+    pub root: PathBuf,
 }
 
 #[derive(Serialize, Clone, Debug)]

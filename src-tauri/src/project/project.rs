@@ -67,7 +67,7 @@ impl<R: Runtime> ProjectManager<R> {
     pub fn set_project(&self, window: &Window<R>, project: Option<Arc<Project>>) {
         let mut projects = self.projects.write().unwrap();
         let model = project.as_ref().map(|p| ProjectModel {
-            root: p.root.clone().into_os_string().into_string().unwrap(),
+            root: p.root.clone(),
         });
         match project {
             None => {
@@ -92,11 +92,7 @@ impl<R: Runtime> ProjectManager<R> {
             }
         };
 
-        info!(
-            "project set for window {}: {:?}",
-            window.label(),
-            model.as_ref().map(|m| &m.root)
-        );
+        info!("project set for window {}: {:?}", window.label(), model);
         let _ = window.emit("project_changed", ProjectChangeEvent { project: model });
     }
 
