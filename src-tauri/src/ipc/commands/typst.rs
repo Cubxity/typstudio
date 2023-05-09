@@ -4,12 +4,11 @@ use crate::ipc::model::TypstRenderResponse;
 use crate::ipc::{TypstCompileEvent, TypstDocument, TypstSourceError};
 use crate::project::ProjectManager;
 use base64::Engine;
-use log::debug;
+use log::{debug, trace};
 use serde::Serialize;
 use serde_repr::Serialize_repr;
 use siphasher::sip128::{Hasher128, SipHasher};
 use std::hash::Hash;
-use std::panic::catch_unwind;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
@@ -200,6 +199,12 @@ pub async fn typst_autocomplete<R: Runtime>(
 ) -> Result<TypstCompleteResponse> {
     let (project, path) = project_path(&window, &project_manager, path)?;
     let mut world = project.world.lock().unwrap();
+
+    let offset = content
+        .char_indices()
+        .nth(offset)
+        .map(|a| a.0)
+        .unwrap_or(content.len());
 
     // TODO: Improve error typing
     let source_id = world
