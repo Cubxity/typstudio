@@ -13,7 +13,7 @@ use crate::project::ProjectManager;
 use env_logger::Env;
 use log::info;
 use std::sync::Arc;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, Wry};
+use tauri::{AboutMetadata, CustomMenuItem, Menu, MenuItem, Submenu, Wry};
 
 #[tokio::main]
 async fn main() {
@@ -46,7 +46,24 @@ async fn main() {
 }
 
 fn build_menu() -> Menu {
-    let application_menu = Submenu::new("Typstudio", Menu::new().add_native_item(MenuItem::Quit));
+    let application_menu = Submenu::new(
+        "Typstudio",
+        Menu::new()
+            .add_native_item(MenuItem::About(
+                "Typstudio".into(),
+                AboutMetadata::default(),
+            ))
+            // All of the non-seperator items are macOS specific... it helps it fit in as a "native" application though
+            .add_native_item(MenuItem::Separator)
+            .add_native_item(MenuItem::Services)
+            .add_native_item(MenuItem::Separator)
+            .add_native_item(MenuItem::Hide)
+            .add_native_item(MenuItem::HideOthers)
+            .add_native_item(MenuItem::ShowAll)
+            .add_native_item(MenuItem::Separator)
+            // This one is not though!
+            .add_native_item(MenuItem::Quit),
+    );
 
     let file_submenu = Submenu::new(
         "File",
