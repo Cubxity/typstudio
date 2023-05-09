@@ -27,7 +27,6 @@ export const createFile = (path: string): Promise<never> => invoke("fs_create_fi
 export const createFolder = (path: string): Promise<never> => invoke("fs_create_folder", { path });
 export const deleteByPath = (path: string): Promise<never> => invoke("fs_delete", { path });
 
-
 export const writeFileText = (path: string, content: string): Promise<string> =>
   invoke("fs_write_file_text", { path, content });
 

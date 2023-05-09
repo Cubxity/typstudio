@@ -61,10 +61,12 @@
         />
       {:else if modal.type === "confirm"}
         <div class="flex justify-between mt-3">
-          <button on:click={handleClose} class="rounded-md border-2 border-neutral-700 px-2 py-1"
-            >Cancel</button
-          >
-          <button on:click={handleConfirm} class="rounded-md px-5 py-1 bg-red-500">Ok</button>
+          <button on:click={handleClose} class="rounded-md border-2 border-neutral-700 px-2 py-1">
+            Cancel
+          </button>
+          <button on:click={handleConfirm} class="rounded-md px-5 py-1 bg-red-500">
+            Ok
+          </button>
         </div>
       {/if}
     </div>

@@ -21,10 +21,12 @@ export interface InputModal extends BaseModal {
   initialText?: string;
   callback: (content: string | null) => void;
 }
+
 export interface ConfirmModal extends BaseModal {
   type: "confirm",
   callback: (canceled: boolean) => void
 }
+
 export type Modal = InputModal | ConfirmModal;
 
 const createShell = () => {
