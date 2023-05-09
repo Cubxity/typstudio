@@ -23,7 +23,7 @@
   export let type: FileType;
   export let path: string;
 
-  let expanded = path === "";
+  let expanded = path === "./";
   let files: FileItem[] = [];
 
   const handleClick = (e: MouseEvent) => {
@@ -81,7 +81,7 @@
 
   onMount(() => {
     return appWindow.listen<FSRefreshEvent>("fs_refresh", ({ payload }) => {
-      if (payload.path === path) update();
+      if (`./${payload.path}` === path) update();
     });
   });
 
@@ -91,16 +91,15 @@
     }
   }
 
-  if (path === "") {
+  if (path === "./") {
     onMount(() => project.subscribe(update));
   }
 </script>
 
-{#if path !== ""}
+{#if path !== "./"}
   <div
     class={clsx(
       "text-sm rounded-md pr-2 py-0.5 hover:bg-neutral-700/50 text-white fill-white flex items-center transition",
-      path === "" && "font-bold",
       $shell.selectedFile === path && "bg-neutral-700"
     )}
     style="padding-left: {path.split('/').length * 10}px"
@@ -137,7 +136,7 @@
   {#each files as file}
     <svelte:self
       type={file.type}
-      path={path === "" ? `${path}${file.name}` : `${path}/${file.name}`}
+      path={path === "./" ? `${path}${file.name}` : `${path}/${file.name}`}
     />
   {/each}
 {/if}

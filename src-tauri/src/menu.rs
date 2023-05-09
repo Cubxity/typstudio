@@ -10,13 +10,14 @@ pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
             .set_title("Open Project")
             .pick_folder(move |path| {
                 if let Some(path) = path {
+                    let path = fs::canonicalize(&path).unwrap_or(path);
+
                     let window = e.window();
                     let project_manager: State<'_, Arc<ProjectManager<_>>> = window.state();
-                    let path_clone = path.clone();
                     let project = Arc::new(Project {
-                        root: path,
-                        world: ProjectWorld::new(path_clone).into(),
+                        world: ProjectWorld::new(path.clone()).into(),
                         cache: RwLock::new(Default::default()),
+                        root: path,
                     });
                     project_manager.set_project(window, Some(project));
                 }

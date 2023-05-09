@@ -46,6 +46,14 @@ pnpm tauri dev # or cargo-tauri dev
 pnpm tauri build # or cargo-tauri build
 ```
 
+### Note about running on macOS
+
+When running Typstudio for the first time on macOS, you may see a warning saying that the "Developer can not be verified". This is only a one-time warning for new files downloaded from the internet that aren't notarized.
+
+To be able to work around it, perform the following steps:
+- Right click on the application, and then click "Open"
+- Then, you'll see *yet another* warning from Gatekeeper, just click "Open" again to launch Typstudio
+
 ### Learn more
 
 - [Tauri](https://tauri.app/v1/guides/)

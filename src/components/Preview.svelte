@@ -54,9 +54,25 @@
     }
   };
 
-  onMount(() => {
-    // Returns an unlisten function
-    return appWindow.listen<TypstCompileEvent>("typst_compile", ({ event, payload }) => {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.ctrlKey) {
+      switch (event.key) {
+        // Zoom in
+        case "=":
+        case "+":
+          event.preventDefault();
+          scale = scales[scaleIndex = Math.min(scaleIndex + 1, scales.length - 1)];
+          break;
+        case "-":
+          event.preventDefault();
+          scale = scales[scaleIndex = Math.max(scaleIndex - 1, 0)];
+          break;
+      }
+    }
+  };
+
+  onMount(async () => {
+    const unsubscribe = await appWindow.listen<TypstCompileEvent>("typst_compile", ({ _, payload }) => {
       const { document } = payload;
       if (document) {
         pages = document.pages;
@@ -65,6 +81,13 @@
         height = document.height;
       }
     });
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   });
 </script>
 

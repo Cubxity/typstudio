@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { editor as editorType } from "monaco-editor";
-  import throttle from "lodash/throttle";
   import debounce from "lodash/debounce";
 
   import { initMonaco } from "../lib/editor/monaco";
@@ -12,6 +11,7 @@
   import IModelContentChangedEvent = editorType.IModelContentChangedEvent;
   import IMarkerData = editorType.IMarkerData;
   import { paste } from "$lib/ipc/clipboard";
+  import { throttle } from "$lib/fn";
 
   let divEl: HTMLDivElement;
   let editor: ICodeEditor;
@@ -19,12 +19,12 @@
 
   export let path: string;
 
-  const handleCompile = () => {
+  const handleCompile = async () => {
     const model = editor.getModel();
     if (model) {
       // Removing the preceding slash
       const path = model.uri.path.substring(1);
-      compile(path, model.getValue());
+      await compile(path, model.getValue());
     }
   };
   const handleSave = () => {
@@ -36,7 +36,7 @@
     }
   };
 
-  const handleCompileThrottle = throttle(handleCompile, 100);
+  const handleCompileThrottle = throttle(handleCompile);
   const handleSaveDebounce = debounce(handleSave, 1000, { maxWait: 5000 });
 
   onMount(async () => {

@@ -46,7 +46,7 @@
       </div>
     </div>
     <div class="flex-1 min-h-0 overflow-auto">
-      <ExplorerNode type="directory" path="" />
+      <ExplorerNode type="directory" path="./" />
     </div>
   {/if}
 </div>

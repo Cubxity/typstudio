@@ -30,12 +30,18 @@ jobs:
         run: |
           npm install -g pnpm
           pnpm install --frozen-lockfile
+      - name: configure macOS build
+        if: matrix.platform == 'macos-latest'
+        run: |
+          # Ensure that we have the aarch64 toolchain available for cross-compilation
+          rustup target add aarch64-apple-darwin
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__-preview # the action automatically replaces \_\_VERSION\_\_ with the app version
-          releaseName: "Development Build v__VERSION__"
-          releaseBody: "This is a development release from the master branch."
+          args: ${{ matrix.platform == 'macos-latest' && '--target universal-apple-darwin' || '' }}
+          tagName: v__VERSION__-dev.${{ github.run_number }} # the action automatically replaces \_\_VERSION\_\_ with the app version
+          releaseName: "Development Build v__VERSION__-dev.${{ github.run_number }}"
+          releaseBody: "This is a development release from the master branch (Commit ${{ github.sha }})."
           releaseDraft: false
           prerelease: true
