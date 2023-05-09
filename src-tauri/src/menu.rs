@@ -36,7 +36,7 @@ pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
                     }
                 }
             }),
-        "file_quit" => {
+        "quit" => {
             e.window().app_handle().exit(0);
         }
         _ => {}
