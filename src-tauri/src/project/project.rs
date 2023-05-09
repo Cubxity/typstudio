@@ -108,12 +108,5 @@ impl Debug for Project {
 }
 
 pub fn is_project_config_file(relative: &Path) -> bool {
-    let mut components = relative.components();
-    components
-        .next()
-        .is_some_and(|c| c.as_os_str() == ".typstudio")
-        && components
-            .next()
-            .is_some_and(|c| c.as_os_str() == "project.json")
-        && components.next().is_none()
+    relative.as_os_str() == PATH_PROJECT_CONFIG_FILE
 }
