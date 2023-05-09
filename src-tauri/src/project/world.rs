@@ -49,8 +49,17 @@ impl ProjectWorld {
         }
     }
 
-    pub fn set_main(&mut self, source: SourceId) {
-        self.main = Some(source)
+    pub fn set_main(&mut self, source: Option<SourceId>) {
+        self.main = source
+    }
+
+    pub fn try_set_main<P: AsRef<Path>>(&mut self, main: P) -> FileResult<()> {
+        self.slot_update(main.as_ref(), None)
+            .map(|source| self.set_main(Some(source)))
+    }
+
+    pub fn is_main_set(&self) -> bool {
+        self.main.is_some()
     }
 
     /// Retrieves an existing path slot or inserts a new one.

@@ -9,6 +9,7 @@ use serde::Serialize;
 use serde_repr::Serialize_repr;
 use siphasher::sip128::{Hasher128, SipHasher};
 use std::hash::Hash;
+use std::panic::catch_unwind;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
@@ -73,17 +74,22 @@ pub async fn typst_compile<R: Runtime>(
         .slot_update(path.as_path(), Some(content))
         .map_err(Into::<Error>::into)?;
 
-    // TODO: Configurable main
-    world.set_main(source_id);
+    if !world.is_main_set() {
+        let config = project.config.read().unwrap();
+        if config.apply_main(&*project, &mut *world).is_err() {
+            debug!("skipped compilation for {:?} (main not set)", project);
+            return Ok(());
+        }
+    }
 
-    debug!("compiling: {:?}", path);
+    debug!("compiling: {:?}", project);
     let now = Instant::now();
     match typst::compile(&*world) {
         Ok(doc) => {
             let elapsed = now.elapsed();
             debug!(
                 "compilation succeeded for {:?} in {:?} ms",
-                path,
+                project,
                 elapsed.as_millis()
             );
 
