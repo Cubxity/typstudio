@@ -9,6 +9,7 @@
   import { appWindow } from "@tauri-apps/api/window";
   import ICodeEditor = editorType.ICodeEditor;
   import IModelContentChangedEvent = editorType.IModelContentChangedEvent;
+  import IModelChangedEvent = editorType.IModelChangedEvent;
   import IMarkerData = editorType.IMarkerData;
   import { paste } from "$lib/ipc/clipboard";
   import { throttle } from "$lib/fn";
@@ -57,6 +58,9 @@
       folding: true
     });
 
+    editor.onDidChangeModel((e: IModelChangedEvent) => {
+      handleCompileThrottle();
+    });
     editor.onDidChangeModelContent((e: IModelContentChangedEvent) => {
       // Compile will update the source file directly in the memory without
       // writing to the file system first, this will reduce the preview delay.
