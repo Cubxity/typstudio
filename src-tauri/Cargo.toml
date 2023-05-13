@@ -35,10 +35,10 @@ png = "0.17"
 log = "0.4"
 env_logger = "0.10"
 
-# Pinned to an old revision due to https://github.com/typst/typst/issues/930
-typst = { git = "https://github.com/typst/typst", rev = "bce83d3" }
-typst-library = { git = "https://github.com/typst/typst", rev = "bce83d3" }
-comemo = "0.2"
+typst = { git = "https://github.com/typst/typst" }
+typst-library = { git = "https://github.com/typst/typst" }
+# typst is currently using the git version of comemo
+comemo = { git = "https://github.com/typst/comemo" }
 
 [features]
 # by default Tauri runs in production mode
