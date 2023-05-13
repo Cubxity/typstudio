@@ -4,7 +4,7 @@ use crate::ipc::model::TypstRenderResponse;
 use crate::ipc::{TypstCompileEvent, TypstDocument, TypstSourceError};
 use crate::project::ProjectManager;
 use base64::Engine;
-use log::{debug, trace};
+use log::debug;
 use serde::Serialize;
 use serde_repr::Serialize_repr;
 use siphasher::sip128::{Hasher128, SipHasher};
@@ -70,7 +70,7 @@ pub async fn typst_compile<R: Runtime>(
 
     let mut world = project.world.lock().unwrap();
     let source_id = world
-        .slot_update(path.as_path(), Some(content))
+        .slot_update(path.as_path(), Some(content.clone()))
         .map_err(Into::<Error>::into)?;
 
     if !world.is_main_set() {
@@ -133,8 +133,14 @@ pub async fn typst_compile<R: Runtime>(
                         ErrorPos::Start => span.start..span.start,
                         ErrorPos::End => span.end..span.end,
                     };
+                    let start = content[..range.start].chars().count();
+                    let size = content[range.start..range.end].chars().count();
+
                     let message = e.message.to_string();
-                    TypstSourceError { range, message }
+                    TypstSourceError {
+                        range: start..start + size,
+                        message,
+                    }
                 })
                 .collect();
 
