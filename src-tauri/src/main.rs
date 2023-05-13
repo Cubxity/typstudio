@@ -57,7 +57,10 @@ fn build_menu() -> Menu {
             .add_item(CustomMenuItem::new("file_quit", "Quit")),
     );
     let edit_submenu = Submenu::new("Edit", Menu::new());
-    let view_submenu = Submenu::new("View", Menu::new());
+    let view_submenu = Submenu::new(
+        "View",
+        Menu::new().add_item(CustomMenuItem::new("view_toggle_preview", "Toggle Preview")),
+    );
 
     Menu::new()
         .add_submenu(file_submenu)
