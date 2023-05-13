@@ -55,7 +55,8 @@
       lineHeight: 1.8,
       automaticLayout: true,
       readOnly: true,
-      folding: true
+      folding: true,
+      quickSuggestions: false
     });
 
     editor.onDidChangeModel((e: IModelChangedEvent) => {

@@ -2,9 +2,12 @@ import type { CancellationToken, editor, IRange, Position } from "monaco-editor"
 import { languages } from "monaco-editor";
 
 import { autocomplete, TypstCompletionKind } from "../ipc";
+
 import CompletionTriggerKind = languages.CompletionTriggerKind;
 
 export class TypstCompletionProvider implements languages.CompletionItemProvider {
+  triggerCharacters = [" ", "(", "[", "{", "$", "@", "#", "."];
+
   async provideCompletionItems(
     model: editor.ITextModel,
     position: Position,
