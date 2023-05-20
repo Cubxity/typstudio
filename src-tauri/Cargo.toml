@@ -37,8 +37,7 @@ env_logger = "0.10"
 
 typst = { git = "https://github.com/typst/typst" }
 typst-library = { git = "https://github.com/typst/typst" }
-# typst is currently using the git version of comemo
-comemo = { git = "https://github.com/typst/comemo" }
+comemo = "0.3"
 
 [features]
 # by default Tauri runs in production mode
