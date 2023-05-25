@@ -56,7 +56,9 @@
       automaticLayout: true,
       readOnly: true,
       folding: true,
-      quickSuggestions: false
+      quickSuggestions: false,
+      wordWrap: "on",
+      unicodeHighlight: { ambiguousCharacters: false },
     });
 
     editor.onDidChangeModel((e: IModelChangedEvent) => {
