@@ -128,7 +128,13 @@ impl World for ProjectWorld {
     }
 
     fn font(&self, id: usize) -> Option<Font> {
-        self.engine.fonts.get(id).cloned()
+        let slot = &self.engine.fonts[id];
+        slot.font
+            .get_or_init(|| {
+                let data = fs::read(&slot.path).map(Buffer::from).ok()?;
+                Font::new(data, slot.index)
+            })
+            .clone()
     }
 
     fn file(&self, path: &Path) -> FileResult<Buffer> {
