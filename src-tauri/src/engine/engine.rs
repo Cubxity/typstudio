@@ -1,7 +1,7 @@
 use crate::engine::{FontSearcher, FontSlot};
 use comemo::Prehashed;
 use typst::eval::Library;
-use typst::font::{Font, FontBook};
+use typst::font::FontBook;
 
 pub struct TypstEngine {
     pub library: Prehashed<Library>,

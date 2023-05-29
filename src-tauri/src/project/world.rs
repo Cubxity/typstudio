@@ -1,4 +1,5 @@
 use crate::engine::TypstEngine;
+use chrono::Datelike;
 use comemo::Prehashed;
 use elsa::FrozenVec;
 use std::cell::RefCell;
@@ -8,7 +9,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use typst::diag::{FileError, FileResult};
-use typst::eval::Library;
+use typst::eval::{Datetime, Library};
 use typst::font::{Font, FontBook};
 use typst::syntax::{Source, SourceId};
 use typst::util::Buffer;
@@ -151,5 +152,17 @@ impl World for ProjectWorld {
         fs::read(&path)
             .map(Buffer::from)
             .map_err(|e| FileError::from_io(e, path.as_ref()))
+    }
+
+    fn today(&self, offset: Option<i64>) -> Option<Datetime> {
+        let dt = match offset {
+            None => chrono::Local::now().naive_local(),
+            Some(o) => (chrono::Utc::now() + chrono::Duration::hours(o)).naive_utc(),
+        };
+        Datetime::from_ymd(
+            dt.year(),
+            dt.month().try_into().ok()?,
+            dt.day().try_into().ok()?,
+        )
     }
 }
