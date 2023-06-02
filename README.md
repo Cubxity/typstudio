@@ -38,6 +38,7 @@ The builds support Linux (amd64), macOS (amd64, aarch64), and Windows (amd64).
 
 - AUR (maintained by [alerque](https://github.com/alerque)):
   `typstudio` ([link](https://aur.archlinux.org/packages/typstudio))
+- AUR `typstudio-bin` ([link](https://aur.archlinux.org/packages/typstudio-bin))
 
 ### Note about running on macOS
 
