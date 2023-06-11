@@ -71,6 +71,36 @@ pub async fn fs_create_file<R: Runtime>(
 }
 
 #[tauri::command]
+pub async fn fs_create_folder<R: Runtime>(
+    window: Window<R>,
+    project_manager: State<'_, Arc<ProjectManager<R>>>,
+    path: PathBuf,
+) -> Result<()> {
+    let (_, path) = project_path(&window, &project_manager, path)?;
+    // Not sure if there's a scenario where this condition is not met
+    // unless the project is located at `/`
+    fs::create_dir_all(path).map_err(Into::<Error>::into)?;
+
+    Ok(())
+}
+#[tauri::command]
+pub async fn fs_delete<R: Runtime>(
+    window: Window<R>,
+    project_manager: State<'_, Arc<ProjectManager<R>>>,
+    path: PathBuf,
+) -> Result<()> {
+    let (_, path) = project_path(&window, &project_manager, path)?;
+    // Not sure if there's a scenario where this condition is not met
+    // unless the project is located at `/`
+    if (path).is_file() {
+        fs::remove_file(path).map_err(Into::<Error>::into)?;
+    } else {
+        fs::remove_dir_all(path).map_err(Into::<Error>::into)?;
+    }
+
+    Ok(())
+}
+#[tauri::command]
 pub async fn fs_write_file_binary<R: Runtime>(
     window: Window<R>,
     project_manager: State<'_, Arc<ProjectManager<R>>>,
