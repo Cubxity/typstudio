@@ -38,7 +38,7 @@ impl ProjectWorld {
             Entry::Occupied(mut o) => match o.get() {
                 Ok(id) => {
                     let sources = self.sources.as_mut();
-                    let src = &mut sources[id.clone().into_u16() as usize];
+                    let src = &mut sources[id.clone().as_u16() as usize];
                     if let Ok(content) = content.ok_or_else(|| fs::read_to_string(&path).ok()) {
                         src.replace(content)
                     }
@@ -121,7 +121,7 @@ impl World for ProjectWorld {
     }
 
     fn source(&self, id: SourceId) -> &Source {
-        &self.sources[id.into_u16() as usize]
+        &self.sources[id.as_u16() as usize]
     }
 
     fn book(&self) -> &Prehashed<FontBook> {
