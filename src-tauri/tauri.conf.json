@@ -7,7 +7,10 @@
     "distDir": "../build",
     "devPath": "http://localhost:5173",
     "beforeDevCommand": "pnpm run dev",
-    "beforeBuildCommand": "pnpm run build"
+    "beforeBuildCommand": "pnpm run build",
+    "features": [
+      "embed-fonts"
+    ]
   },
   "tauri": {
     "bundle": {

@@ -3,6 +3,7 @@ use crate::ipc::commands::project_path;
 use crate::project::ProjectManager;
 use enumset::EnumSetType;
 use serde::Serialize;
+use std::cmp::Ordering;
 use std::fs;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
@@ -155,6 +156,16 @@ pub async fn fs_list_dir<R: Runtime>(
             }
         }
     }
+
+    files.sort_by(|a, b| {
+        if a.file_type == FileType::Directory && b.file_type == FileType::File {
+            Ordering::Less
+        } else if a.file_type == FileType::File && b.file_type == FileType::Directory {
+            Ordering::Greater
+        } else {
+            a.name.cmp(&b.name)
+        }
+    });
 
     Ok(files)
 }
