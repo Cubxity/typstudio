@@ -21,6 +21,7 @@ export interface TypstRenderResponse {
   image: string;
   width: number;
   height: number;
+  nonce: number;
 }
 
 export enum TypstCompletionKind {
@@ -46,8 +47,8 @@ export interface TypstCompleteResponse {
 export const compile = (path: string, content: string): Promise<TypstRenderResponse> =>
   invoke<TypstRenderResponse>("typst_compile", { path, content });
 
-export const render = (page: number, scale: number): Promise<TypstRenderResponse> =>
-  invoke<TypstRenderResponse>("typst_render", { page, scale });
+export const render = (page: number, scale: number, nonce: number): Promise<TypstRenderResponse> =>
+  invoke<TypstRenderResponse>("typst_render", { page, scale, nonce });
 
 export const autocomplete = (
   path: string,

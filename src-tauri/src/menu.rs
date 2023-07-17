@@ -1,6 +1,7 @@
-use crate::project::{Project, ProjectManager, ProjectWorld};
+use crate::ipc::events::view;
+use crate::project::{Project, ProjectManager};
 use std::fs;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use tauri::api::dialog::FileDialogBuilder;
 use tauri::{Manager, Runtime, State, WindowMenuEvent};
 
@@ -10,14 +11,11 @@ pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
             .set_title("Open Project")
             .pick_folder(move |path| {
                 if let Some(path) = path {
+                    let path = fs::canonicalize(&path).unwrap_or(path);
+
                     let window = e.window();
                     let project_manager: State<'_, Arc<ProjectManager<_>>> = window.state();
-                    let path_clone = path.clone();
-                    let project = Arc::new(Project {
-                        root: path,
-                        world: ProjectWorld::new(path_clone).into(),
-                        cache: RwLock::new(Default::default()),
-                    });
+                    let project = Arc::new(Project::load_from_path(path));
                     project_manager.set_project(window, Some(project));
                 }
             }),
@@ -41,6 +39,9 @@ pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
             }),
         "file_quit" => {
             e.window().app_handle().exit(0);
+        }
+        "view_toggle_preview" => {
+            view::toggle_preview_visibility(e.window());
         }
         _ => {}
     }

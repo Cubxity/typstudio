@@ -21,6 +21,8 @@
   let width: number;
   let height: number;
 
+  let isVisible: boolean = true;
+
   const handleMouseDown = (event: MouseEvent) => {
     event.preventDefault();
     isMouseDown = true;
@@ -54,36 +56,72 @@
     }
   };
 
-  onMount(() => {
-    // Returns an unlisten function
-    return appWindow.listen<TypstCompileEvent>("typst_compile", ({ event, payload }) => {
-      const { document } = payload;
-      if (document) {
-        pages = document.pages;
-        hash = document.hash;
-        width = document.width;
-        height = document.height;
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.ctrlKey) {
+      switch (event.key) {
+        // Zoom in
+        case "=":
+        case "+":
+          event.preventDefault();
+          scale = scales[scaleIndex = Math.min(scaleIndex + 1, scales.length - 1)];
+          break;
+        case "-":
+          event.preventDefault();
+          scale = scales[scaleIndex = Math.max(scaleIndex - 1, 0)];
+          break;
       }
-    });
+    }
+  };
+
+  onMount(async () => {
+    const unsubscribeCompile = await appWindow.listen<TypstCompileEvent>(
+      "typst_compile",
+      ({ _, payload }) => {
+        const { document } = payload;
+        if (document) {
+          pages = document.pages;
+          hash = document.hash;
+          width = document.width;
+          height = document.height;
+        }
+      }
+    );
+
+    const unsubscribeToggleVisibility = await appWindow.listen<never>(
+      "toggle_preview_visibility",
+      () => {
+        isVisible = !isVisible;
+      }
+    );
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      unsubscribeCompile();
+      unsubscribeToggleVisibility();
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   });
 </script>
 
-<div
-  bind:this={container}
-  on:mousemove={handleMove}
-  on:mousedown={handleMouseDown}
-  on:mouseup={handleMouseUp}
-  on:mouseleave={handleMouseUp}
-  on:wheel={handleWheel}
-  class={clsx("flex flex-col overflow-auto bg-neutral-700 p-4 gap-4", $$props.class)}
->
-  {#each Array(pages) as _, i}
-    <PreviewPage
-      page={i}
-      hash={hash}
-      width={Math.floor(width * scale)}
-      height={Math.floor(height * scale)}
-      scale={scale}
-    />
-  {/each}
-</div>
+{#if isVisible}
+  <div
+    bind:this={container}
+    on:mousemove={handleMove}
+    on:mousedown={handleMouseDown}
+    on:mouseup={handleMouseUp}
+    on:mouseleave={handleMouseUp}
+    on:wheel={handleWheel}
+    class={clsx("flex flex-col overflow-auto bg-neutral-700 p-4 gap-4", $$props.class)}
+  >
+    {#each Array(pages) as _, i}
+      <PreviewPage
+        page={i}
+        {hash}
+        width={Math.floor(width * scale)}
+        height={Math.floor(height * scale)}
+        {scale}
+      />
+    {/each}
+  </div>
+{/if}

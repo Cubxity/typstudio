@@ -27,6 +27,7 @@ pub struct TypstRenderResponse {
     pub image: String,
     pub width: u32,
     pub height: u32,
+    pub nonce: u32,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -36,7 +37,7 @@ pub struct ProjectChangeEvent {
 
 #[derive(Serialize, Clone, Debug)]
 pub struct ProjectModel {
-    pub root: String,
+    pub root: PathBuf,
 }
 
 #[derive(Serialize, Clone, Debug)]

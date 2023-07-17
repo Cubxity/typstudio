@@ -11,7 +11,7 @@ Typstudio is built using [Tauri](https://tauri.app/).
 - [x] Compiler error markers
 - [x] Real time preview
     - [ ] Navigate to source
-    - [ ] More performance optimization
+    - [x] More performance optimization
 - [x] Build/export
 - [ ] Complete file explorer system
 - [x] Auto complete
@@ -22,6 +22,32 @@ Typstudio is built using [Tauri](https://tauri.app/).
 - [ ] Project creation assistant / templates
 
 ...and more to come!
+
+## Installing & Running
+
+Typstudio does not have a stable release yet.
+
+### Development Builds
+
+Development builds are provided in [releases](https://github.com/Cubxity/typstudio/releases).
+The builds support Linux (amd64), macOS (amd64, aarch64), and Windows (amd64).
+
+### Packages
+
+**Unstable:**
+
+- AUR (maintained by [alerque](https://github.com/alerque)):
+  `typstudio` ([link](https://aur.archlinux.org/packages/typstudio))
+
+### Note about running on macOS
+
+When running Typstudio for the first time on macOS, you may see a warning saying that the "Developer can not be
+verified". This is only a one-time warning for new files downloaded from the internet that aren't notarized.
+
+To be able to work around it, perform the following steps:
+
+- Right-click on the application, and then click "Open"
+- Then, you'll see *yet another* warning from Gatekeeper, just click "Open" again to launch Typstudio
 
 ## Development
 

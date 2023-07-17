@@ -70,20 +70,25 @@ pub async fn typst_compile<R: Runtime>(
 
     let mut world = project.world.lock().unwrap();
     let source_id = world
-        .slot_update(path.as_path(), Some(content))
+        .slot_update(path.as_path(), Some(content.clone()))
         .map_err(Into::<Error>::into)?;
 
-    // TODO: Configurable main
-    world.set_main(source_id);
+    if !world.is_main_set() {
+        let config = project.config.read().unwrap();
+        if config.apply_main(&*project, &mut *world).is_err() {
+            debug!("skipped compilation for {:?} (main not set)", project);
+            return Ok(());
+        }
+    }
 
-    debug!("compiling: {:?}", path);
+    debug!("compiling: {:?}", project);
     let now = Instant::now();
     match typst::compile(&*world) {
         Ok(doc) => {
             let elapsed = now.elapsed();
             debug!(
                 "compilation succeeded for {:?} in {:?} ms",
-                path,
+                project,
                 elapsed.as_millis()
             );
 
@@ -128,8 +133,14 @@ pub async fn typst_compile<R: Runtime>(
                         ErrorPos::Start => span.start..span.start,
                         ErrorPos::End => span.end..span.end,
                     };
+                    let start = content[..range.start].chars().count();
+                    let size = content[range.start..range.end].chars().count();
+
                     let message = e.message.to_string();
-                    TypstSourceError { range, message }
+                    TypstSourceError {
+                        range: start..start + size,
+                        message,
+                    }
                 })
                 .collect();
 
@@ -152,6 +163,7 @@ pub async fn typst_render<R: Runtime>(
     project_manager: tauri::State<'_, Arc<ProjectManager<R>>>,
     page: usize,
     scale: f32,
+    nonce: u32,
 ) -> Result<TypstRenderResponse> {
     debug!("rendering page {} @{}x", page, scale);
     let project = project_manager
@@ -174,6 +186,7 @@ pub async fn typst_render<R: Runtime>(
                 image: b64,
                 width: bmp.width(),
                 height: bmp.height(),
+                nonce,
             });
         }
     }
@@ -192,6 +205,12 @@ pub async fn typst_autocomplete<R: Runtime>(
 ) -> Result<TypstCompleteResponse> {
     let (project, path) = project_path(&window, &project_manager, path)?;
     let mut world = project.world.lock().unwrap();
+
+    let offset = content
+        .char_indices()
+        .nth(offset)
+        .map(|a| a.0)
+        .unwrap_or(content.len());
 
     // TODO: Improve error typing
     let source_id = world

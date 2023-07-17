@@ -34,16 +34,19 @@ chrono = "0.4"
 png = "0.17"
 log = "0.4"
 env_logger = "0.10"
+dirs = "5.0"
+walkdir = "2.3"
+memmap2 = "0.5"
 
-# Pinned to an old revision due to https://github.com/typst/typst/issues/930
-typst = { git = "https://github.com/typst/typst", rev = "bce83d3" }
-typst-library = { git = "https://github.com/typst/typst", rev = "bce83d3" }
-comemo = "0.2"
+typst = { git = "https://github.com/typst/typst" }
+typst-library = { git = "https://github.com/typst/typst" }
+comemo = "0.3"
 
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
-default = ["custom-protocol"]
+default = ["custom-protocol", "embed-fonts"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = ["tauri/custom-protocol"]
+embed-fonts = []
