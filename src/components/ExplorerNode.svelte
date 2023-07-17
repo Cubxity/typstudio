@@ -34,7 +34,7 @@
       shell.selectFile(path);
     }
   };
-  $: handleCreateFile = (e: MouseEvent) => {
+  const handleCreateFile = (e: MouseEvent) => {
     e.stopPropagation();
     shell.createModal({
       type: "input",
@@ -48,7 +48,7 @@
       },
     });
   };
-  $: handleCreateFolder = (e: MouseEvent) => {
+  const handleCreateFolder = (e: MouseEvent) => {
     e.stopPropagation();
     expanded = true;
     shell.createModal({
@@ -99,7 +99,7 @@
 {#if path !== ""}
   <div
     class={clsx(
-      "text-sm rounded-md pr-2 py-0.5 hover:bg-neutral-700/50 text-white fill-white flex items-center transition",
+      "text-sm rounded-md pr-2 py-0.5 hover:bg-neutral-700/50 text-white fill-white flex items-center transition [&:hover>button]:visible",
       path === "" && "font-bold",
       $shell.selectedFile === path && "bg-neutral-700"
     )}
@@ -120,14 +120,14 @@
     <span class="flex-1 truncate">
       {path === "" ? "root" : path.slice(path.lastIndexOf("/") + 1)}
     </span>
-    <button class="p-1 transition-colors hover:bg-neutral-700" on:click={deleteEntry}>
+    <button class="p-1 transition-colors  hover:bg-neutral-700 invisible" on:click={deleteEntry}>
       <Delete class="w-4 h-4" />
     </button>
     {#if type === "directory"}
-      <button class="p-1 transition-colors hover:bg-neutral-700" on:click={handleCreateFile}>
+      <button class="p-1 transition-colors hover:bg-neutral-700 invisible" on:click={handleCreateFile}>
         <FileAdd class="w-4 h-4" />
       </button>
-      <button class="p-1 transition-colors hover:bg-neutral-700" on:click={handleCreateFolder}>
+      <button class="p-1 transition-colors hover:bg-neutral-700 invisible" on:click={handleCreateFolder}>
         <CreateNewFolder class="w-4 h-4" />
       </button>
     {/if}
