@@ -1,5 +1,5 @@
 use super::{Error, Result};
-use crate::ipc::commands::project_path;
+use crate::ipc::commands::{project, project_path};
 use crate::ipc::model::TypstRenderResponse;
 use crate::ipc::{TypstCompileEvent, TypstDocument, TypstSourceError};
 use crate::project::ProjectManager;
@@ -15,7 +15,6 @@ use std::time::Instant;
 use tauri::Runtime;
 use typst::geom::Color;
 use typst::ide::{Completion, CompletionKind};
-use typst::syntax::ErrorPos;
 use typst::World;
 
 #[derive(Serialize_repr, Debug)]
@@ -66,11 +65,11 @@ pub async fn typst_compile<R: Runtime>(
     path: PathBuf,
     content: String,
 ) -> Result<()> {
-    let (project, path) = project_path(&window, &project_manager, path)?;
+    let project = project(&window, &project_manager)?;
 
     let mut world = project.world.lock().unwrap();
     let source_id = world
-        .slot_update(path.as_path(), Some(content.clone()))
+        .slot_update(&path, Some(content.clone()))
         .map_err(Into::<Error>::into)?;
 
     if !world.is_main_set() {
@@ -81,7 +80,7 @@ pub async fn typst_compile<R: Runtime>(
         }
     }
 
-    debug!("compiling: {:?}", project);
+    debug!("compiling {:?}: {:?}", path, project);
     let now = Instant::now();
     match typst::compile(&*world) {
         Ok(doc) => {
@@ -123,26 +122,25 @@ pub async fn typst_compile<R: Runtime>(
             debug!("compilation failed with {:?} errors", errors.len());
 
             let source = world.source(source_id);
-            let errors: Vec<TypstSourceError> = errors
-                .iter()
-                .filter(|e| e.span.source() == source_id)
-                .map(|e| {
-                    let span = source.range(e.span);
-                    let range = match e.pos {
-                        ErrorPos::Full => span,
-                        ErrorPos::Start => span.start..span.start,
-                        ErrorPos::End => span.end..span.end,
-                    };
-                    let start = content[..range.start].chars().count();
-                    let size = content[range.start..range.end].chars().count();
+            let errors: Vec<TypstSourceError> = match source {
+                Ok(source) => errors
+                    .iter()
+                    .filter(|e| e.span.id() == source_id)
+                    .filter_map(|e| {
+                        let span = source.find(e.span)?;
+                        let range = span.range();
+                        let start = content[..range.start].chars().count();
+                        let size = content[range.start..range.end].chars().count();
 
-                    let message = e.message.to_string();
-                    TypstSourceError {
-                        range: start..start + size,
-                        message,
-                    }
-                })
-                .collect();
+                        let message = e.message.to_string();
+                        Some(TypstSourceError {
+                            range: start..start + size,
+                            message,
+                        })
+                    })
+                    .collect(),
+                Err(_) => vec![],
+            };
 
             let _ = window.emit(
                 "typst_compile",
@@ -216,9 +214,10 @@ pub async fn typst_autocomplete<R: Runtime>(
     let source_id = world
         .slot_update(&*path, Some(content))
         .map_err(Into::<Error>::into)?;
-    let source = world.source(source_id);
 
-    let (offset, completions) = typst::ide::autocomplete(&*world, &[], source, offset, explicit)
+    let source = world.source(source_id).map_err(Into::<Error>::into)?;
+
+    let (offset, completions) = typst::ide::autocomplete(&*world, &[], &source, offset, explicit)
         .ok_or_else(|| Error::Unknown)?;
 
     Ok(TypstCompleteResponse {

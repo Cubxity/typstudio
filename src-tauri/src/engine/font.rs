@@ -4,7 +4,7 @@ use once_cell::sync::OnceCell;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use typst::font::{Font, FontBook, FontInfo};
-use typst::util::Buffer;
+use typst::util::Bytes;
 use walkdir::WalkDir;
 
 // Taken from typst-cli
@@ -48,8 +48,7 @@ impl FontSearcher {
     #[cfg(feature = "embed-fonts")]
     fn search_embedded(&mut self) {
         let mut search = |bytes: &'static [u8]| {
-            let buffer = Buffer::from_static(bytes);
-            for (i, font) in Font::iter(buffer).enumerate() {
+            for (i, font) in Font::iter(Bytes::from_static(bytes)).enumerate() {
                 self.book.push(font.info().clone());
                 self.fonts.push(FontSlot {
                     path: PathBuf::new(),

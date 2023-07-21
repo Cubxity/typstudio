@@ -24,16 +24,14 @@
     const model = editor.getModel();
     if (model) {
       // Removing the preceding slash
-      const path = model.uri.path.substring(1);
-      await compile(path, model.getValue());
+      await compile(model.uri.path, model.getValue());
     }
   };
   const handleSave = () => {
     const model = editor.getModel();
     if (model) {
       // Removing the preceding slash
-      const path = model.uri.path.substring(1);
-      writeFileText(path, model.getValue());
+      writeFileText(model.uri.path, model.getValue());
     }
   };
 
@@ -58,7 +56,7 @@
       folding: true,
       quickSuggestions: false,
       wordWrap: "on",
-      unicodeHighlight: { ambiguousCharacters: false },
+      unicodeHighlight: { ambiguousCharacters: false }
     });
 
     editor.onDidChangeModel((e: IModelChangedEvent) => {

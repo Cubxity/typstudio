@@ -88,14 +88,14 @@ pub async fn fs_write_file_text<R: Runtime>(
     path: PathBuf,
     content: String,
 ) -> Result<()> {
-    let (project, path) = project_path(&window, &project_manager, path)?;
-    let _ = File::create(&path)
+    let (project, absolute_path) = project_path(&window, &project_manager, &path)?;
+    let _ = File::create(&absolute_path)
         .map(|mut f| f.write_all(content.as_bytes()))
         .map_err(Into::<Error>::into)?;
 
     let mut world = project.world.lock().unwrap();
     let _ = world
-        .slot_update(path.as_path(), Some(content))
+        .slot_update(&path, Some(content))
         .map_err(Into::<Error>::into)?;
 
     Ok(())

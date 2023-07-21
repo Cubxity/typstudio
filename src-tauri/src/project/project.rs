@@ -2,13 +2,12 @@ use crate::project::ProjectWorld;
 use log::debug;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Formatter};
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::sync::{Mutex, RwLock};
 use std::{fs, io};
 use thiserror::Error;
 use typst::diag::{FileError, FileResult};
 use typst::doc::Document;
-use typst::util::PathExt;
 
 const PATH_PROJECT_CONFIG_FILE: &str = ".typstudio/project.json";
 
@@ -64,10 +63,10 @@ impl ProjectConfig {
 
     pub fn apply_main(&self, project: &Project, world: &mut ProjectWorld) -> FileResult<()> {
         if let Some(main) = self.main.as_ref() {
-            let main = project.root.join(main);
-            let main = main.canonicalize().unwrap_or_else(|_| main.normalize());
-            if main.starts_with(&project.root) {
-                return world.try_set_main(main);
+            if main.components().next() == Some(Component::RootDir) {
+                debug!("setting main path {:?} for {:?}", main, project);
+                world.set_main_path(&main);
+                return Ok(());
             }
         }
 
@@ -81,7 +80,7 @@ impl ProjectConfig {
 impl Default for ProjectConfig {
     fn default() -> Self {
         Self {
-            main: Some(PathBuf::from("main.typ")),
+            main: Some(PathBuf::from("/main.typ")),
         }
     }
 }

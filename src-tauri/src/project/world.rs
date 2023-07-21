@@ -1,8 +1,7 @@
 use crate::engine::TypstEngine;
 use chrono::Datelike;
 use comemo::Prehashed;
-use elsa::FrozenVec;
-use std::cell::RefCell;
+use std::cell::{OnceCell, RefCell, RefMut};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fs;
@@ -10,100 +9,102 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use typst::diag::{FileError, FileResult};
 use typst::eval::{Datetime, Library};
+use typst::file::FileId;
 use typst::font::{Font, FontBook};
-use typst::syntax::{Source, SourceId};
-use typst::util::Buffer;
+use typst::syntax::Source;
+use typst::util::{Bytes, PathExt};
 use typst::World;
 
 pub struct ProjectWorld {
     root: PathBuf,
     engine: Arc<TypstEngine>,
 
-    /// Map of source ids, identified by the canonical path.
-    paths: RefCell<HashMap<PathBuf, FileResult<SourceId>>>,
-
-    /// A list of sources, identified by its id
-    sources: FrozenVec<Box<Source>>,
+    /// Map of slots, identified by [FileId]
+    slots: RefCell<HashMap<FileId, PathSlot>>,
 
     /// This should be set upon project initialization. If the
     /// main source is set to [Option::None], then the compilation
     /// should not occur. Otherwise, the code will panic.
-    main: Option<SourceId>,
+    main: Option<FileId>,
 }
 
 impl ProjectWorld {
-    pub fn slot_update(&mut self, path: &Path, content: Option<String>) -> FileResult<SourceId> {
-        let mut paths = self.paths.borrow_mut();
-        match paths.entry(path.to_path_buf()) {
-            Entry::Occupied(mut o) => match o.get() {
-                Ok(id) => {
-                    let sources = self.sources.as_mut();
-                    let src = &mut sources[id.clone().as_u16() as usize];
-                    if let Ok(content) = content.ok_or_else(|| fs::read_to_string(&path).ok()) {
-                        src.replace(content)
+    pub fn slot_update<P: AsRef<Path>>(
+        &mut self,
+        path: P,
+        content: Option<String>,
+    ) -> FileResult<FileId> {
+        let id = FileId::new(None, path.as_ref());
+        let mut slot = self.slot(id)?;
+
+        match slot.source.get_mut() {
+            // Only update existing sources. There is no need to insert new sources
+            Some(res) => {
+                let content = ProjectWorld::take_or_read(&path, content)?;
+                match res {
+                    Ok(src) => {
+                        // TODO: incremental edits
+                        src.replace(content);
                     }
-                    Ok(id.clone())
+                    Err(_) => {
+                        *res = Ok(Source::new(id, content));
+                    }
                 }
-                Err(_) => o.insert(self.insert(path, content)).clone(),
-            },
-            Entry::Vacant(v) => v.insert(self.insert(path, content)).clone(),
-        }
+            }
+            None => {}
+        };
+        Ok(id)
     }
 
-    pub fn set_main(&mut self, source: Option<SourceId>) {
-        self.main = source
+    pub fn set_main(&mut self, id: Option<FileId>) {
+        self.main = id
     }
 
-    pub fn try_set_main<P: AsRef<Path>>(&mut self, main: P) -> FileResult<()> {
-        self.slot_update(main.as_ref(), None)
-            .map(|source| self.set_main(Some(source)))
+    pub fn set_main_path<P: AsRef<Path>>(&mut self, main: P) {
+        self.set_main(Some(FileId::new(None, main.as_ref())))
     }
 
     pub fn is_main_set(&self) -> bool {
         self.main.is_some()
     }
 
-    /// Retrieves an existing path slot or inserts a new one.
-    /// Inserting a new one will assign a source id and will
-    /// load the file's content from the file system.
-    fn slot(&self, path: &Path) -> FileResult<SourceId> {
-        let path = self
-            .root
-            .join(path)
-            .canonicalize()
-            .map_err(|_| FileError::NotFound(path.into()))?;
-        if !path.starts_with(&self.root) {
-            return Err(FileError::AccessDenied);
-        }
-        let mut paths = self.paths.borrow_mut();
-        paths
-            .entry(path.clone())
-            .or_insert_with(|| self.insert(&path, None))
-            .clone()
-    }
-
-    fn insert<P: AsRef<Path>>(&self, path: P, content: Option<String>) -> FileResult<SourceId> {
-        let content = match content {
-            Some(content) => content,
-            None => fs::read_to_string(&path).map_err(|e| FileError::from_io(e, path.as_ref()))?,
-        };
-
-        let sources = &self.sources;
-        let id = SourceId::from_u16(sources.len() as u16);
-        let source = Source::new(id, path.as_ref(), content);
-        sources.push(Box::new(source));
-
-        Ok(id)
-    }
-
     pub fn new(root: PathBuf) -> Self {
         Self {
             root,
             engine: Arc::new(TypstEngine::new()),
-            paths: RefCell::default(),
-            sources: Default::default(),
+            slots: RefCell::default(),
             main: None,
         }
+    }
+
+    fn slot(&self, id: FileId) -> FileResult<RefMut<PathSlot>> {
+        let mut path = PathBuf::new();
+        let mut slots = self.slots.borrow_mut();
+        if let Entry::Vacant(_) = &slots.entry(id) {
+            // This will disallow paths outside of the root directory. Note that this will
+            // still allow symlinks.
+            path = self
+                .root
+                .join_rooted(id.path())
+                .ok_or(FileError::AccessDenied)?;
+        }
+
+        Ok(RefMut::map(slots, |slots| {
+            slots.entry(id).or_insert_with(|| PathSlot {
+                id,
+                path,
+                source: OnceCell::new(),
+                buffer: OnceCell::new(),
+            })
+        }))
+    }
+
+    fn take_or_read<P: AsRef<Path>>(path: P, content: Option<String>) -> FileResult<String> {
+        if let Some(content) = content {
+            return Ok(content);
+        }
+
+        fs::read_to_string(path.as_ref()).map_err(|e| FileError::from_io(e, path.as_ref()))
     }
 }
 
@@ -112,48 +113,35 @@ impl World for ProjectWorld {
         &self.engine.library
     }
 
-    fn main(&self) -> &Source {
-        self.source(self.main.expect("Main file must be set"))
-    }
-
-    fn resolve(&self, path: &Path) -> FileResult<SourceId> {
-        self.slot(path)
-    }
-
-    fn source(&self, id: SourceId) -> &Source {
-        &self.sources[id.as_u16() as usize]
-    }
-
     fn book(&self) -> &Prehashed<FontBook> {
         &self.engine.fontbook
+    }
+
+    fn main(&self) -> Source {
+        self.source(self.main.expect("the main file must be set"))
+            .expect("unable to load the main file") // TODO: Handle this better
+            .clone()
+    }
+
+    fn source(&self, id: FileId) -> FileResult<Source> {
+        self.slot(id)?.source()
+    }
+
+    fn file(&self, id: FileId) -> FileResult<Bytes> {
+        self.slot(id)?.file()
     }
 
     fn font(&self, id: usize) -> Option<Font> {
         let slot = &self.engine.fonts[id];
         slot.font
             .get_or_init(|| {
-                let data = fs::read(&slot.path).map(Buffer::from).ok()?;
+                let data = fs::read(&slot.path).map(Bytes::from).ok()?;
                 Font::new(data, slot.index)
             })
             .clone()
     }
 
-    fn file(&self, path: &Path) -> FileResult<Buffer> {
-        let path = self
-            .root
-            .join(path)
-            .canonicalize()
-            .map_err(|_| FileError::NotFound(path.into()))?;
-
-        if !path.starts_with(&self.root) {
-            return Err(FileError::AccessDenied);
-        }
-
-        fs::read(&path)
-            .map(Buffer::from)
-            .map_err(|e| FileError::from_io(e, path.as_ref()))
-    }
-
+    // TODO: Should probably cache this per compilation, to ensure consistent datetime throughout the document
     fn today(&self, offset: Option<i64>) -> Option<Datetime> {
         let dt = match offset {
             None => chrono::Local::now().naive_local(),
@@ -164,5 +152,35 @@ impl World for ProjectWorld {
             dt.month().try_into().ok()?,
             dt.day().try_into().ok()?,
         )
+    }
+}
+
+struct PathSlot {
+    id: FileId,
+    path: PathBuf,
+    source: OnceCell<FileResult<Source>>,
+    buffer: OnceCell<FileResult<Bytes>>,
+}
+
+impl PathSlot {
+    fn source(&self) -> FileResult<Source> {
+        self.source
+            .get_or_init(|| {
+                let text = fs::read_to_string(&self.path)
+                    .map_err(|e| FileError::from_io(e, &self.path))?;
+                Ok(Source::new(self.id, text))
+            })
+            .clone()
+    }
+
+    fn file(&self) -> FileResult<Bytes> {
+        // TODO: Unsure whether buffer should be implemented this way. This may cause a lot of memory usage on projects with a lot of large files.
+        self.buffer
+            .get_or_init(|| {
+                fs::read(&self.path)
+                    .map(Bytes::from)
+                    .map_err(|e| FileError::from_io(e, &self.path))
+            })
+            .clone()
     }
 }

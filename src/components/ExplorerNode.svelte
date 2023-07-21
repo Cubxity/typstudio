@@ -13,7 +13,7 @@
   export let type: FileType;
   export let path: string;
 
-  let expanded = path === "./";
+  let expanded = path === "/";
   let files: FileItem[] = [];
 
   const handleClick = () => {
@@ -30,7 +30,7 @@
 
   onMount(() => {
     return appWindow.listen<FSRefreshEvent>("fs_refresh", ({ payload }) => {
-      if (`./${payload.path}` === path) update();
+      if (`/${payload.path}` === path) update();
     });
   });
 
@@ -40,12 +40,12 @@
     }
   }
 
-  if (path === "./") {
+  if (path === "/") {
     onMount(() => project.subscribe(update));
   }
 </script>
 
-{#if path !== "./"}
+{#if path !== "/"}
   <div
     class={clsx(
       "text-sm rounded-md pr-2 py-0.5 hover:bg-neutral-700/50 text-white fill-white flex items-center transition",
@@ -66,7 +66,7 @@
       class={clsx("w-4 h-4 inline fill-neutral-500 mr-2", type === "file" && "ml-5")}
     />
     <span class="flex-1 truncate">
-    {path === "./" ? "root" : path.slice(path.lastIndexOf("/") + 1)}
+    {path === "/" ? "root" : path.slice(path.lastIndexOf("/") + 1)}
   </span>
   </div>
 {/if}
@@ -74,7 +74,7 @@
   {#each files as file}
     <svelte:self
       type={file.type}
-      path={path === "./" ? `${path}${file.name}` : `${path}/${file.name}`}
+      path={path === "/" ? `${path}${file.name}` : `${path}/${file.name}`}
     />
   {/each}
 {/if}
