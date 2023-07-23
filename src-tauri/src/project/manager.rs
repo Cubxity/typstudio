@@ -1,10 +1,10 @@
 use crate::ipc::{FSRefreshEvent, ProjectChangeEvent, ProjectModel};
 use crate::project::{is_project_config_file, Project, ProjectConfig};
-use log::{debug, error, info, trace};
+use log::{debug, error, info, trace, warn};
 use notify::event::ModifyKind;
 use notify::{Config, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 use tauri::{Runtime, Window};
 use tokio::sync::mpsc::channel;
@@ -133,6 +133,7 @@ impl<R: Runtime> ProjectManager<R> {
             kind
         );
         match kind {
+            // Refreshes the explorer view
             FSHandleKind::Refresh => {
                 if let Ok(relative) = path.strip_prefix(&project.root) {
                     let event = FSRefreshEvent {
@@ -141,6 +142,7 @@ impl<R: Runtime> ProjectManager<R> {
                     let _ = window.emit("fs_refresh", &event);
                 }
             }
+            // Reloads the file content, eg. project config or project source files
             FSHandleKind::Reload => {
                 if let Ok(relative) = path.strip_prefix(&project.root) {
                     if is_project_config_file(relative) {
@@ -149,6 +151,20 @@ impl<R: Runtime> ProjectManager<R> {
                             let mut config_write = project.config.write().unwrap();
                             *config_write = config;
                             config_write.apply(project);
+                        }
+                    } else {
+                        let mut world = project.world.lock().unwrap();
+                        let path = Path::new("/").join(relative);
+                        match world.slot_update(&path, None) {
+                            Ok(id) => {
+                                debug!("updated slot for {:?} {:?} in {:?}", path, id, project);
+                            }
+                            Err(e) => {
+                                warn!(
+                                    "unable to update slot for {:?} in {:?}: {:?}",
+                                    path, project, e
+                                );
+                            }
                         }
                     }
                 }

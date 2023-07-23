@@ -37,10 +37,26 @@ impl ProjectWorld {
         let id = FileId::new(None, path.as_ref());
         let mut slot = self.slot(id)?;
 
+        match slot.buffer.get_mut() {
+            // Only update existing buffers. There is no need to insert new buffers
+            Some(res) => {
+                // TODO: Avoid cloning?
+                let bytes = self.take_or_read_bytes(&path, content.clone())?;
+                match res {
+                    Ok(b) => {
+                        *b = bytes;
+                    }
+                    Err(_) => {
+                        *res = Ok(bytes);
+                    }
+                }
+            }
+            None => {}
+        };
         match slot.source.get_mut() {
             // Only update existing sources. There is no need to insert new sources
             Some(res) => {
-                let content = ProjectWorld::take_or_read(&path, content)?;
+                let content = self.take_or_read(&path, content)?;
                 match res {
                     Ok(src) => {
                         // TODO: incremental edits
@@ -99,12 +115,34 @@ impl ProjectWorld {
         }))
     }
 
-    fn take_or_read<P: AsRef<Path>>(path: P, content: Option<String>) -> FileResult<String> {
+    fn take_or_read<P: AsRef<Path>>(&self, path: P, content: Option<String>) -> FileResult<String> {
         if let Some(content) = content {
             return Ok(content);
         }
 
-        fs::read_to_string(path.as_ref()).map_err(|e| FileError::from_io(e, path.as_ref()))
+        let path = self
+            .root
+            .join_rooted(path.as_ref())
+            .ok_or(FileError::AccessDenied)?;
+        fs::read_to_string(&path).map_err(|e| FileError::from_io(e, &path))
+    }
+
+    fn take_or_read_bytes<P: AsRef<Path>>(
+        &self,
+        path: P,
+        content: Option<String>,
+    ) -> FileResult<Bytes> {
+        if let Some(content) = content {
+            return Ok(Bytes::from(content.into_bytes()));
+        }
+
+        let path = self
+            .root
+            .join_rooted(path.as_ref())
+            .ok_or(FileError::AccessDenied)?;
+        fs::read(&path)
+            .map_err(|e| FileError::from_io(e, &path))
+            .map(Bytes::from)
     }
 }
 
