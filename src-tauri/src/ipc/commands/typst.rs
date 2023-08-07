@@ -13,6 +13,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
 use tauri::Runtime;
+use typst::eval::Tracer;
 use typst::geom::Color;
 use typst::ide::{Completion, CompletionKind};
 use typst::World;
@@ -82,7 +83,8 @@ pub async fn typst_compile<R: Runtime>(
 
     debug!("compiling {:?}: {:?}", path, project);
     let now = Instant::now();
-    match typst::compile(&*world) {
+    let mut tracer = Tracer::new(None);
+    match typst::compile(&*world, &mut tracer) {
         Ok(doc) => {
             let elapsed = now.elapsed();
             debug!(

@@ -8,11 +8,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use typst::diag::{FileError, FileResult};
-use typst::eval::{Datetime, Library};
-use typst::file::FileId;
+use typst::eval::{Bytes, Datetime, Library};
 use typst::font::{Font, FontBook};
-use typst::syntax::Source;
-use typst::util::{Bytes, PathExt};
+use typst::syntax::{FileId, Source};
+use typst::util::PathExt;
 use typst::World;
 
 pub struct ProjectWorld {
