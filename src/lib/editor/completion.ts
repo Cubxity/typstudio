@@ -16,7 +16,7 @@ export class TypstCompletionProvider implements languages.CompletionItemProvider
   ): Promise<languages.CompletionList> {
     console.log("completing", position, context);
     const { offset: completionOffset, completions } = await autocomplete(
-      model.uri.path.substring(1),
+      model.uri.path,
       model.getValue(),
       model.getOffsetAt(position),
       context.triggerKind === CompletionTriggerKind.Invoke
