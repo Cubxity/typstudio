@@ -203,7 +203,7 @@ pub async fn typst_autocomplete<R: Runtime>(
     offset: usize,
     explicit: bool,
 ) -> Result<TypstCompleteResponse> {
-    let (project, path) = project_path(&window, &project_manager, path)?;
+    let project = project(&window, &project_manager)?;
     let mut world = project.world.lock().unwrap();
 
     let offset = content
