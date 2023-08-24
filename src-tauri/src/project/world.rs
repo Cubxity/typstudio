@@ -7,10 +7,10 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use typst::diag::{FileError, FileResult};
+use typst::diag::{FileError, FileResult, PackageError, PackageResult};
 use typst::eval::{Bytes, Datetime, Library};
 use typst::font::{Font, FontBook};
-use typst::syntax::{FileId, Source};
+use typst::syntax::{FileId, PackageSpec, Source};
 use typst::util::PathExt;
 use typst::World;
 
@@ -96,12 +96,16 @@ impl ProjectWorld {
         let mut path = PathBuf::new();
         let mut slots = self.slots.borrow_mut();
         if let Entry::Vacant(_) = &slots.entry(id) {
+            let buf;
+            let mut root = &self.root;
+            if let Some(spec) = id.package() {
+                buf = Self::prepare_package(spec)?;
+                root = &buf;
+            }
+
             // This will disallow paths outside of the root directory. Note that this will
             // still allow symlinks.
-            path = self
-                .root
-                .join_rooted(id.path())
-                .ok_or(FileError::AccessDenied)?;
+            path = root.join_rooted(id.path()).ok_or(FileError::AccessDenied)?;
         }
 
         Ok(RefMut::map(slots, |slots| {
@@ -142,6 +146,29 @@ impl ProjectWorld {
         fs::read(&path)
             .map_err(|e| FileError::from_io(e, &path))
             .map(Bytes::from)
+    }
+
+    fn prepare_package(spec: &PackageSpec) -> PackageResult<PathBuf> {
+        let subdir = format!(
+            "typst/packages/{}/{}/{}",
+            spec.namespace, spec.name, spec.version
+        );
+
+        if let Some(data_dir) = dirs::data_dir() {
+            let dir = data_dir.join(&subdir);
+            if dir.exists() {
+                return Ok(dir);
+            }
+        }
+
+        if let Some(cache_dir) = dirs::cache_dir() {
+            let dir = cache_dir.join(&subdir);
+            if dir.exists() {
+                return Ok(dir);
+            }
+        }
+
+        Err(PackageError::NotFound(spec.clone()))
     }
 }
 
