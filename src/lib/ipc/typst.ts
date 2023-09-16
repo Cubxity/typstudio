@@ -30,6 +30,7 @@ export enum TypstCompletionKind {
   Parameter = 3,
   Constant = 4,
   Symbol = 5,
+  Type = 6,
 }
 
 export interface TypstCompletion {

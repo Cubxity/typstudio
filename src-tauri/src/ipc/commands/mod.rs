@@ -8,10 +8,9 @@ pub use fs::*;
 
 use crate::project::{Project, ProjectManager};
 use ::typst::diag::FileError;
-use ::typst::util::PathExt;
 use serde::{Serialize, Serializer};
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::sync::Arc;
 use tauri::{Runtime, State, Window};
 
@@ -45,7 +44,7 @@ pub fn project<R: Runtime>(
     project_manager: &State<Arc<ProjectManager<R>>>,
 ) -> Result<Arc<Project>> {
     project_manager
-        .get_project(&window)
+        .get_project(window)
         .ok_or(Error::UnknownProject)
 }
 
@@ -58,11 +57,23 @@ pub fn project_path<R: Runtime, P: AsRef<Path>>(
     path: P,
 ) -> Result<(Arc<Project>, PathBuf)> {
     let project = project_manager
-        .get_project(&window)
+        .get_project(window)
         .ok_or(Error::UnknownProject)?;
-    let path = project
-        .root
-        .join_rooted(path.as_ref())
-        .ok_or(Error::UnrelatedPath)?;
-    Ok((project, path))
+    let root_len = project.root.as_os_str().len();
+    let mut out = project.root.to_path_buf();
+    for component in path.as_ref().components() {
+        match component {
+            Component::Prefix(_) => {}
+            Component::RootDir => {}
+            Component::CurDir => {}
+            Component::ParentDir => {
+                out.pop();
+                if out.as_os_str().len() < root_len {
+                    return Err(Error::UnrelatedPath);
+                }
+            }
+            Component::Normal(_) => out.push(component),
+        }
+    }
+    Ok((project, out))
 }

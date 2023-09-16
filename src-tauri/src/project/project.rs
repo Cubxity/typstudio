@@ -2,12 +2,13 @@ use crate::project::ProjectWorld;
 use log::debug;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Formatter};
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::sync::{Mutex, RwLock};
 use std::{fs, io};
 use thiserror::Error;
 use typst::diag::{FileError, FileResult};
 use typst::doc::Document;
+use typst::syntax::VirtualPath;
 
 const PATH_PROJECT_CONFIG_FILE: &str = ".typstudio/project.json";
 
@@ -39,7 +40,7 @@ pub enum ProjectConfigError {
 impl ProjectConfig {
     pub fn read_from_file<P: AsRef<Path>>(path: P) -> Result<ProjectConfig, ProjectConfigError> {
         let json = fs::read_to_string(path).map_err(Into::<ProjectConfigError>::into)?;
-        serde_json::from_str(&*json).map_err(Into::into)
+        serde_json::from_str(&json).map_err(Into::into)
     }
 
     pub fn write_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), ProjectConfigError> {
@@ -49,7 +50,7 @@ impl ProjectConfig {
 
     pub fn apply(&self, project: &Project) {
         let mut world = project.world.lock().unwrap();
-        match self.apply_main(project, &mut *world) {
+        match self.apply_main(project, &mut world) {
             Ok(_) => debug!(
                 "applied main source configuration for project {:?}",
                 project
@@ -63,17 +64,16 @@ impl ProjectConfig {
 
     pub fn apply_main(&self, project: &Project, world: &mut ProjectWorld) -> FileResult<()> {
         if let Some(main) = self.main.as_ref() {
-            if main.components().next() == Some(Component::RootDir) {
-                debug!("setting main path {:?} for {:?}", main, project);
-                world.set_main_path(&main);
-                return Ok(());
-            }
+            let vpath = VirtualPath::new(main);
+            debug!("setting main path {:?} for {:?}", main, project);
+            world.set_main_path(vpath);
+            return Ok(());
         }
 
         // ??
         world.set_main(None);
 
-        Err(FileError::Other)
+        Err(FileError::NotSource)
     }
 }
 
@@ -89,7 +89,7 @@ impl Project {
     pub fn load_from_path(path: PathBuf) -> Self {
         let path = fs::canonicalize(&path).unwrap_or(path);
         let config =
-            ProjectConfig::read_from_file(&path.join(PATH_PROJECT_CONFIG_FILE)).unwrap_or_default();
+            ProjectConfig::read_from_file(path.join(PATH_PROJECT_CONFIG_FILE)).unwrap_or_default();
 
         Self {
             world: ProjectWorld::new(path.clone()).into(),

@@ -22,7 +22,7 @@ async fn main() {
 
     let project_manager = Arc::new(ProjectManager::<Wry>::new());
     if let Ok(watcher) = ProjectManager::init_watcher(project_manager.clone()) {
-        let _ = project_manager.set_watcher(watcher);
+        project_manager.set_watcher(watcher);
     }
 
     tauri::Builder::default()

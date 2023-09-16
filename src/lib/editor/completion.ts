@@ -50,6 +50,9 @@ export class TypstCompletionProvider implements languages.CompletionItemProvider
           case TypstCompletionKind.Symbol:
             kind = languages.CompletionItemKind.Keyword;
             break;
+          case TypstCompletionKind.Type:
+            kind = languages.CompletionItemKind.Class;
+            break;
         }
 
         let count = 0;

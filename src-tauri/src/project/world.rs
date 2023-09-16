@@ -10,8 +10,7 @@ use std::sync::Arc;
 use typst::diag::{FileError, FileResult, PackageError, PackageResult};
 use typst::eval::{Bytes, Datetime, Library};
 use typst::font::{Font, FontBook};
-use typst::syntax::{FileId, PackageSpec, Source};
-use typst::util::PathExt;
+use typst::syntax::{FileId, PackageSpec, Source, VirtualPath};
 use typst::World;
 
 pub struct ProjectWorld {
@@ -33,40 +32,33 @@ impl ProjectWorld {
         path: P,
         content: Option<String>,
     ) -> FileResult<FileId> {
-        let id = FileId::new(None, path.as_ref());
+        let vpath = VirtualPath::new(path);
+        let id = FileId::new(None, vpath.clone());
         let mut slot = self.slot(id)?;
 
-        match slot.buffer.get_mut() {
-            // Only update existing buffers. There is no need to insert new buffers
-            Some(res) => {
-                // TODO: Avoid cloning?
-                let bytes = self.take_or_read_bytes(&path, content.clone())?;
-                match res {
-                    Ok(b) => {
-                        *b = bytes;
-                    }
-                    Err(_) => {
-                        *res = Ok(bytes);
-                    }
+        if let Some(res) = slot.buffer.get_mut() {
+            // TODO: Avoid cloning?
+            let bytes = self.take_or_read_bytes(&vpath, content.clone())?;
+            match res {
+                Ok(b) => {
+                    *b = bytes;
+                }
+                Err(_) => {
+                    *res = Ok(bytes);
                 }
             }
-            None => {}
         };
-        match slot.source.get_mut() {
-            // Only update existing sources. There is no need to insert new sources
-            Some(res) => {
-                let content = self.take_or_read(&path, content)?;
-                match res {
-                    Ok(src) => {
-                        // TODO: incremental edits
-                        src.replace(content);
-                    }
-                    Err(_) => {
-                        *res = Ok(Source::new(id, content));
-                    }
+        if let Some(res) = slot.source.get_mut() {
+            let content = self.take_or_read(&vpath, content)?;
+            match res {
+                Ok(src) => {
+                    // TODO: incremental edits
+                    src.replace(content);
+                }
+                Err(_) => {
+                    *res = Ok(Source::new(id, content));
                 }
             }
-            None => {}
         };
         Ok(id)
     }
@@ -75,8 +67,8 @@ impl ProjectWorld {
         self.main = id
     }
 
-    pub fn set_main_path<P: AsRef<Path>>(&mut self, main: P) {
-        self.set_main(Some(FileId::new(None, main.as_ref())))
+    pub fn set_main_path(&mut self, main: VirtualPath) {
+        self.set_main(Some(FileId::new(None, main)))
     }
 
     pub fn is_main_set(&self) -> bool {
@@ -105,7 +97,7 @@ impl ProjectWorld {
 
             // This will disallow paths outside of the root directory. Note that this will
             // still allow symlinks.
-            path = root.join_rooted(id.path()).ok_or(FileError::AccessDenied)?;
+            path = id.vpath().resolve(root).ok_or(FileError::AccessDenied)?;
         }
 
         Ok(RefMut::map(slots, |slots| {
@@ -118,31 +110,25 @@ impl ProjectWorld {
         }))
     }
 
-    fn take_or_read<P: AsRef<Path>>(&self, path: P, content: Option<String>) -> FileResult<String> {
+    fn take_or_read(&self, vpath: &VirtualPath, content: Option<String>) -> FileResult<String> {
         if let Some(content) = content {
             return Ok(content);
         }
 
-        let path = self
-            .root
-            .join_rooted(path.as_ref())
-            .ok_or(FileError::AccessDenied)?;
+        let path = vpath.resolve(&self.root).ok_or(FileError::AccessDenied)?;
         fs::read_to_string(&path).map_err(|e| FileError::from_io(e, &path))
     }
 
-    fn take_or_read_bytes<P: AsRef<Path>>(
+    fn take_or_read_bytes(
         &self,
-        path: P,
+        vpath: &VirtualPath,
         content: Option<String>,
     ) -> FileResult<Bytes> {
         if let Some(content) = content {
             return Ok(Bytes::from(content.into_bytes()));
         }
 
-        let path = self
-            .root
-            .join_rooted(path.as_ref())
-            .ok_or(FileError::AccessDenied)?;
+        let path = vpath.resolve(&self.root).ok_or(FileError::AccessDenied)?;
         fs::read(&path)
             .map_err(|e| FileError::from_io(e, &path))
             .map(Bytes::from)

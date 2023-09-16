@@ -1,5 +1,5 @@
 use super::{Error, Result};
-use crate::ipc::commands::{project, project_path};
+use crate::ipc::commands::project;
 use crate::ipc::model::TypstRenderResponse;
 use crate::ipc::{TypstCompileEvent, TypstDocument, TypstSourceError};
 use crate::project::ProjectManager;
@@ -26,6 +26,7 @@ pub enum TypstCompletionKind {
     Parameter = 3,
     Constant = 4,
     Symbol = 5,
+    Type = 6,
 }
 
 #[derive(Serialize, Debug)]
@@ -51,6 +52,7 @@ impl From<Completion> for TypstCompletion {
                 CompletionKind::Param => TypstCompletionKind::Parameter,
                 CompletionKind::Constant => TypstCompletionKind::Constant,
                 CompletionKind::Symbol(_) => TypstCompletionKind::Symbol,
+                CompletionKind::Type => TypstCompletionKind::Type,
             },
             label: value.label.to_string(),
             apply: value.apply.map(|s| s.to_string()),
@@ -75,7 +77,7 @@ pub async fn typst_compile<R: Runtime>(
 
     if !world.is_main_set() {
         let config = project.config.read().unwrap();
-        if config.apply_main(&*project, &mut *world).is_err() {
+        if config.apply_main(&project, &mut world).is_err() {
             debug!("skipped compilation for {:?} (main not set)", project);
             return Ok(());
         }
@@ -83,7 +85,7 @@ pub async fn typst_compile<R: Runtime>(
 
     debug!("compiling {:?}: {:?}", path, project);
     let now = Instant::now();
-    let mut tracer = Tracer::new(None);
+    let mut tracer = Tracer::new();
     match typst::compile(&*world, &mut tracer) {
         Ok(doc) => {
             let elapsed = now.elapsed();
@@ -127,7 +129,7 @@ pub async fn typst_compile<R: Runtime>(
             let errors: Vec<TypstSourceError> = match source {
                 Ok(source) => errors
                     .iter()
-                    .filter(|e| e.span.id() == source_id)
+                    .filter(|e| e.span.id() == Some(source_id))
                     .filter_map(|e| {
                         let span = source.find(e.span)?;
                         let range = span.range();

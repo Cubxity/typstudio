@@ -35,7 +35,7 @@ pub async fn fs_read_file_binary<R: Runtime>(
     path: PathBuf,
 ) -> Result<Vec<u8>> {
     let (_, path) = project_path(&window, &project_manager, path)?;
-    fs::read(&path).map_err(Into::into)
+    fs::read(path).map_err(Into::into)
 }
 
 #[tauri::command]
@@ -45,7 +45,7 @@ pub async fn fs_read_file_text<R: Runtime>(
     path: PathBuf,
 ) -> Result<String> {
     let (_, path) = project_path(&window, &project_manager, path)?;
-    fs::read_to_string(&path).map_err(Into::into)
+    fs::read_to_string(path).map_err(Into::into)
 }
 
 #[tauri::command]
@@ -78,7 +78,7 @@ pub async fn fs_write_file_binary<R: Runtime>(
     content: Vec<u8>,
 ) -> Result<()> {
     let (_, path) = project_path(&window, &project_manager, path)?;
-    fs::write(&path, content).map_err(Into::into)
+    fs::write(path, content).map_err(Into::into)
 }
 
 #[tauri::command]
@@ -89,7 +89,7 @@ pub async fn fs_write_file_text<R: Runtime>(
     content: String,
 ) -> Result<()> {
     let (project, absolute_path) = project_path(&window, &project_manager, &path)?;
-    let _ = File::create(&absolute_path)
+    let _ = File::create(absolute_path)
         .map(|mut f| f.write_all(content.as_bytes()))
         .map_err(Into::<Error>::into)?;
 
@@ -108,10 +108,10 @@ pub async fn fs_list_dir<R: Runtime>(
     path: PathBuf,
 ) -> Result<Vec<FileItem>> {
     let (_, path) = project_path(&window, &project_manager, path)?;
-    let list = fs::read_dir(&path).map_err(Into::<Error>::into)?;
+    let list = fs::read_dir(path).map_err(Into::<Error>::into)?;
 
     let mut files: Vec<FileItem> = vec![];
-    for entry in list {
+    list.into_iter().for_each(|entry| {
         if let Ok(entry) = entry {
             if let (Ok(file_type), Ok(name)) = (entry.file_type(), entry.file_name().into_string())
             {
@@ -125,7 +125,7 @@ pub async fn fs_list_dir<R: Runtime>(
                 files.push(FileItem { name, file_type: t });
             }
         }
-    }
+    });
 
     files.sort_by(|a, b| {
         if a.file_type == FileType::Directory && b.file_type == FileType::File {
