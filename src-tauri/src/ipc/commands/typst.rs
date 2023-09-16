@@ -216,16 +216,18 @@ pub async fn typst_autocomplete<R: Runtime>(
 
     // TODO: Improve error typing
     let source_id = world
-        .slot_update(&*path, Some(content))
+        .slot_update(&*path, Some(content.clone()))
         .map_err(Into::<Error>::into)?;
 
     let source = world.source(source_id).map_err(Into::<Error>::into)?;
 
-    let (offset, completions) = typst::ide::autocomplete(&*world, &[], &source, offset, explicit)
-        .ok_or_else(|| Error::Unknown)?;
+    let (completed_offset, completions) =
+        typst::ide::autocomplete(&*world, &[], &source, offset, explicit)
+            .ok_or_else(|| Error::Unknown)?;
 
+    let completed_char_offset = content[..completed_offset].chars().count();
     Ok(TypstCompleteResponse {
-        offset,
+        offset: completed_char_offset,
         completions: completions.into_iter().map(TypstCompletion::from).collect(),
     })
 }
