@@ -9,6 +9,7 @@ export const project = writable<Project | null>(null);
 export interface Shell {
   selectedFile: string | undefined;
   modals: Modal[];
+  previewState: PreviewState;
 }
 
 export interface BaseModal {
@@ -23,10 +24,17 @@ export interface InputModal extends BaseModal {
 
 export type Modal = InputModal;
 
+export enum PreviewState {
+  Idle,
+  Compiling,
+  CompileError,
+}
+
 const createShell = () => {
   const { subscribe, set, update } = writable<Shell>({
     selectedFile: undefined,
     modals: [],
+    previewState: PreviewState.Idle,
   });
 
   return {
@@ -52,6 +60,9 @@ const createShell = () => {
           modals,
         };
       });
+    },
+    setPreviewState(previewState: PreviewState) {
+      update((shell) => ({ ...shell, previewState }));
     },
   };
 };

@@ -5,7 +5,7 @@ use std::path::PathBuf;
 #[derive(Serialize, Clone, Debug)]
 pub struct TypstCompileEvent {
     pub document: Option<TypstDocument>,
-    pub errors: Option<Vec<TypstSourceError>>,
+    pub diagnostics: Option<Vec<TypstSourceDiagnostic>>,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -17,9 +17,18 @@ pub struct TypstDocument {
 }
 
 #[derive(Serialize, Clone, Debug)]
-pub struct TypstSourceError {
+#[serde(rename_all = "snake_case")]
+pub enum TypstDiagnosticSeverity {
+    Error,
+    Warning,
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub struct TypstSourceDiagnostic {
     pub range: Range<usize>,
+    pub severity: TypstDiagnosticSeverity,
     pub message: String,
+    pub hints: Vec<String>,
 }
 
 #[derive(Serialize, Clone, Debug)]

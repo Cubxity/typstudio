@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Modal } from "../lib/stores";
   import { shell } from "../lib/stores";
-  import CloseIcon from "./icons/CloseIcon.svelte";
+  import { XIcon } from "lucide-svelte";
 
   let modal: Modal | undefined;
   $: modal = $shell.modals[0];
@@ -36,9 +36,9 @@
         </span>
         <button
           class="rounded-md border border-neutral-700 p-1 transition-colors hover:bg-neutral-700"
-          on:click={handleClose}
+          on:click={() => handleClose()}
         >
-          <CloseIcon class="w-4 h-4" />
+          <XIcon class="w-4 h-4" />
         </button>
       </div>
       {#if modal.type === "input"}
@@ -46,7 +46,7 @@
           class="w-full rounded-md bg-neutral-600 px-2 py-1 mt-2 text-sm"
           on:keyup={handleInputKeyUp}
           autofocus
-        >
+        />
       {/if}
     </div>
   </div>

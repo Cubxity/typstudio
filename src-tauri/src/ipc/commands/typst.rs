@@ -1,7 +1,9 @@
 use super::{Error, Result};
 use crate::ipc::commands::project;
 use crate::ipc::model::TypstRenderResponse;
-use crate::ipc::{TypstCompileEvent, TypstDocument, TypstSourceError};
+use crate::ipc::{
+    TypstCompileEvent, TypstDiagnosticSeverity, TypstDocument, TypstSourceDiagnostic,
+};
 use crate::project::ProjectManager;
 use base64::Engine;
 use log::debug;
@@ -13,6 +15,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
 use tauri::Runtime;
+use typst::diag::Severity;
 use typst::eval::Tracer;
 use typst::geom::Color;
 use typst::ide::{Completion, CompletionKind};
@@ -118,28 +121,36 @@ pub async fn typst_compile<R: Runtime>(
                         width: width.to_pt(),
                         height: height.to_pt(),
                     }),
-                    errors: None,
+                    diagnostics: None,
                 },
             );
         }
-        Err(errors) => {
-            debug!("compilation failed with {:?} errors", errors.len());
+        Err(diagnostics) => {
+            debug!(
+                "compilation failed with {:?} diagnostics",
+                diagnostics.len()
+            );
 
             let source = world.source(source_id);
-            let errors: Vec<TypstSourceError> = match source {
-                Ok(source) => errors
+            let diagnostics: Vec<TypstSourceDiagnostic> = match source {
+                Ok(source) => diagnostics
                     .iter()
-                    .filter(|e| e.span.id() == Some(source_id))
-                    .filter_map(|e| {
-                        let span = source.find(e.span)?;
+                    .filter(|d| d.span.id() == Some(source_id))
+                    .filter_map(|d| {
+                        let span = source.find(d.span)?;
                         let range = span.range();
                         let start = content[..range.start].chars().count();
                         let size = content[range.start..range.end].chars().count();
 
-                        let message = e.message.to_string();
-                        Some(TypstSourceError {
+                        let message = d.message.to_string();
+                        Some(TypstSourceDiagnostic {
                             range: start..start + size,
+                            severity: match d.severity {
+                                Severity::Error => TypstDiagnosticSeverity::Error,
+                                Severity::Warning => TypstDiagnosticSeverity::Warning,
+                            },
                             message,
+                            hints: d.hints.iter().map(|hint| hint.to_string()).collect(),
                         })
                     })
                     .collect(),
@@ -150,7 +161,7 @@ pub async fn typst_compile<R: Runtime>(
                 "typst_compile",
                 TypstCompileEvent {
                     document: None,
-                    errors: Some(errors),
+                    diagnostics: Some(diagnostics),
                 },
             );
         }

@@ -13,6 +13,7 @@
   import IMarkerData = editorType.IMarkerData;
   import { paste } from "$lib/ipc/clipboard";
   import { throttle } from "$lib/fn";
+  import { PreviewState, shell } from "$lib/stores";
 
   let divEl: HTMLDivElement;
   let editor: ICodeEditor;
@@ -23,6 +24,8 @@
   const handleCompile = async () => {
     const model = editor.getModel();
     if (model) {
+      shell.setPreviewState(PreviewState.Compiling);
+
       // Removing the preceding slash
       await compile(model.uri.path, model.getValue());
     }
@@ -44,9 +47,9 @@
 
     // @ts-ignore
     self.MonacoEnvironment = {
-      getWorker: function(_moduleId: any, label: string) {
+      getWorker: function (_moduleId: any, label: string) {
         return new EditorWorker.default();
-      }
+      },
     };
 
     editor = (await monacoImport).editor.create(divEl, {
@@ -56,7 +59,7 @@
       folding: true,
       quickSuggestions: false,
       wordWrap: "on",
-      unicodeHighlight: { ambiguousCharacters: false }
+      unicodeHighlight: { ambiguousCharacters: false },
     });
 
     editor.onDidChangeModel((e: IModelChangedEvent) => {
@@ -79,23 +82,30 @@
 
     // Returns an unlisten function
     return appWindow.listen<TypstCompileEvent>("typst_compile", ({ event, payload }) => {
-      const { errors } = payload;
+      const { document, diagnostics } = payload;
       const model = editor.getModel();
       if (model) {
-        const markers: IMarkerData[] = errors?.map(({ range, message }) => {
-          const start = model.getPositionAt(range.start);
-          const end = model.getPositionAt(range.end);
-          return {
-            startLineNumber: start.lineNumber,
-            startColumn: start.column,
-            endLineNumber: end.lineNumber,
-            endColumn: end.column,
-            message,
-            severity: monaco.MarkerSeverity.Error
-          };
-        }) ?? [];
+        const markers: IMarkerData[] =
+          diagnostics?.map(({ range, severity, message, hints }) => {
+            const start = model.getPositionAt(range.start);
+            const end = model.getPositionAt(range.end);
+            return {
+              startLineNumber: start.lineNumber,
+              startColumn: start.column,
+              endLineNumber: end.lineNumber,
+              endColumn: end.column,
+              message: message + "\n" + hints.map((hint) => `hint: ${hint}`).join("\n"),
+              severity:
+                severity === "error" ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
+            };
+          }) ?? [];
 
         monaco.editor.setModelMarkers(model, "owner", markers);
+      }
+      if (document) {
+        shell.setPreviewState(PreviewState.Idle);
+      } else {
+        shell.setPreviewState(PreviewState.CompileError);
       }
     });
   });
@@ -140,12 +150,16 @@
       const range = editor.getSelection();
       const model = editor.getModel();
       if (range && model) {
-        model.pushEditOperations([], [
-          {
-            range: range,
-            text: `\n#figure(\n  image("${res.path}"),\n  caption: []\n)\n`
-          }
-        ], () => null);
+        model.pushEditOperations(
+          [],
+          [
+            {
+              range: range,
+              text: `\n#figure(\n  image("${res.path}"),\n  caption: []\n)\n`,
+            },
+          ],
+          () => null
+        );
       }
     }
   };
@@ -153,4 +167,4 @@
   $: fetchContent(editor, path);
 </script>
 
-<div bind:this={divEl} on:paste={handlePaste} class={$$props.class}></div>
+<div bind:this={divEl} on:paste={handlePaste} class={$$props.class} />

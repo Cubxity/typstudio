@@ -1,13 +1,10 @@
 <script lang="ts">
   import clsx from "clsx";
-  import FileIcon from "./icons/FileIcon.svelte";
-  import FolderIcon from "./icons/FolderIcon.svelte";
-  import ArrowDropDownIcon from "./icons/ArrowDropDownIcon.svelte";
-  import ArrowRightIcon from "./icons/ArrowRightIcon.svelte";
   import type { FileItem, FileType, FSRefreshEvent } from "../lib/ipc";
   import { project, shell } from "../lib/stores";
   import { listDir } from "../lib/ipc";
   import { onMount } from "svelte";
+  import { ChevronDownIcon, ChevronRightIcon, FileIcon, FolderIcon } from "lucide-svelte";
   import { appWindow } from "@tauri-apps/api/window";
 
   export let type: FileType;
@@ -57,17 +54,17 @@
   >
     {#if type === "directory"}
       <svelte:component
-        this={expanded ? ArrowDropDownIcon : ArrowRightIcon}
+        this={expanded ? ChevronDownIcon : ChevronRightIcon}
         class="w-4 h-4 inline fill-neutral-500 mr-1"
       />
     {/if}
     <svelte:component
       this={type === "file" ? FileIcon : FolderIcon}
-      class={clsx("w-4 h-4 inline fill-neutral-500 mr-2", type === "file" && "ml-5")}
+      class={clsx("w-4 h-4 inline stroke-neutral-400 mr-2", type === "file" && "ml-5")}
     />
     <span class="flex-1 truncate">
-    {path === "/" ? "root" : path.slice(path.lastIndexOf("/") + 1)}
-  </span>
+      {path === "/" ? "root" : path.slice(path.lastIndexOf("/") + 1)}
+    </span>
   </div>
 {/if}
 {#if expanded}

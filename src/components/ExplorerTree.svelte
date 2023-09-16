@@ -1,10 +1,9 @@
 <script lang="ts">
-
   import clsx from "clsx";
   import ExplorerNode from "./ExplorerNode.svelte";
-  import AddIcon from "./icons/AddIcon.svelte";
   import { project, shell } from "$lib/stores";
   import { createFile } from "$lib/ipc";
+  import { PlusIcon } from "lucide-svelte";
 
   const handleCreate = () => {
     shell.createModal({
@@ -14,7 +13,7 @@
         if (path) {
           createFile(path);
         }
-      }
+      },
     });
   };
 </script>
@@ -25,7 +24,7 @@
       <span class="text-lg font-bold block flex-1">Project</span>
       <div class="flex flex-row rounded-md border border-neutral-700 overflow-clip">
         <button class="p-1 transition-colors hover:bg-neutral-700" on:click={handleCreate}>
-          <AddIcon class="w-4 h-4" />
+          <PlusIcon class="w-4 h-4" />
         </button>
       </div>
     </div>

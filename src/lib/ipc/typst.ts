@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api";
 
 export interface TypstCompileEvent {
   document: TypstDocument | null;
-  errors: TypstSourceError[] | null;
+  diagnostics: TypstSourceDiagnostic[] | null;
 }
 
 export interface TypstDocument {
@@ -12,9 +12,13 @@ export interface TypstDocument {
   height: number;
 }
 
-export interface TypstSourceError {
+export type TypstDiagnosticSeverity = "error" | "warning";
+
+export interface TypstSourceDiagnostic {
   range: { start: number; end: number };
+  severity: TypstDiagnosticSeverity;
   message: string;
+  hints: string[];
 }
 
 export interface TypstRenderResponse {
