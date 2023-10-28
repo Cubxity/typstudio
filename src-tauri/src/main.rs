@@ -13,7 +13,7 @@ use crate::project::ProjectManager;
 use env_logger::Env;
 use log::info;
 use std::sync::Arc;
-use tauri::{CustomMenuItem, Menu, Submenu, Wry};
+use tauri::{AboutMetadata, CustomMenuItem, Menu, MenuItem, Submenu, Wry};
 
 #[tokio::main]
 async fn main() {
@@ -49,6 +49,14 @@ fn build_menu() -> Menu {
     let application_menu = Submenu::new(
         "typstudio",
         Menu::new()
+            .add_native_item(MenuItem::About(String::from("typstudio"), AboutMetadata::new()))
+            .add_native_item(MenuItem::Separator)
+            .add_native_item(MenuItem::Hide)
+            .add_native_item(MenuItem::HideOthers)
+            .add_native_item(MenuItem::ShowAll)
+            .add_native_item(MenuItem::Separator)
+            .add_native_item(MenuItem::Quit)
+
     );
 
     let file_submenu = Submenu::new(
@@ -67,9 +75,12 @@ fn build_menu() -> Menu {
         Menu::new().add_item(CustomMenuItem::new("view_toggle_preview", "Toggle Preview")),
     );
 
-    Menu::new()
-        .add_submenu(application_menu)
-        .add_submenu(file_submenu)
+    let mut menu = Menu::new();
+    #[cfg(target_os = "macos")]
+    {
+        menu = menu.add_submenu(application_menu)
+    }
+    menu.add_submenu(file_submenu)
         .add_submenu(edit_submenu)
         .add_submenu(view_submenu)
 }
