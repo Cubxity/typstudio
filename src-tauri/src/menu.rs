@@ -37,9 +37,6 @@ pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
                     }
                 }
             }),
-        "file_quit" => {
-            e.window().app_handle().exit(0);
-        }
         "view_toggle_preview" => {
             view::toggle_preview_visibility(e.window());
         }

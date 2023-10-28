@@ -55,19 +55,24 @@ fn build_menu() -> Menu {
             .add_native_item(MenuItem::HideOthers)
             .add_native_item(MenuItem::ShowAll)
             .add_native_item(MenuItem::Separator)
-            .add_native_item(MenuItem::Quit)
-
+            .add_native_item(MenuItem::Quit),
     );
+
+    let mut file_menu = Menu::new()
+        .add_item(CustomMenuItem::new("file_open_project", "Open Project"))
+        .add_submenu(Submenu::new(
+            "Export",
+            Menu::new().add_item(CustomMenuItem::new("file_export_pdf", "Export PDF")),
+        ));
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        file_menu = file_menu.add_native_item(MenuItem::Quit);
+    }
 
     let file_submenu = Submenu::new(
         "File",
-        Menu::new()
-            .add_item(CustomMenuItem::new("file_open_project", "Open Project"))
-            .add_submenu(Submenu::new(
-                "Export",
-                Menu::new().add_item(CustomMenuItem::new("file_export_pdf", "Export PDF")),
-            ))
-            .add_item(CustomMenuItem::new("file_quit", "Quit")),
+        file_menu,
     );
     let edit_submenu = Submenu::new("Edit", Menu::new());
     let view_submenu = Submenu::new(
