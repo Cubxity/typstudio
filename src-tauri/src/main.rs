@@ -46,6 +46,11 @@ async fn main() {
 }
 
 fn build_menu() -> Menu {
+    let application_menu = Submenu::new(
+        "typstudio",
+        Menu::new()
+    );
+
     let file_submenu = Submenu::new(
         "File",
         Menu::new()
@@ -63,6 +68,7 @@ fn build_menu() -> Menu {
     );
 
     Menu::new()
+        .add_submenu(application_menu)
         .add_submenu(file_submenu)
         .add_submenu(edit_submenu)
         .add_submenu(view_submenu)
