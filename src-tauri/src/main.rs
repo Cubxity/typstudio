@@ -49,7 +49,10 @@ fn build_menu() -> Menu {
     let application_menu = Submenu::new(
         "typstudio",
         Menu::new()
-            .add_native_item(MenuItem::About(String::from("typstudio"), AboutMetadata::new()))
+            .add_native_item(MenuItem::About(
+                String::from("typstudio"),
+                AboutMetadata::new(),
+            ))
             .add_native_item(MenuItem::Separator)
             .add_native_item(MenuItem::Hide)
             .add_native_item(MenuItem::HideOthers)
@@ -59,10 +62,14 @@ fn build_menu() -> Menu {
     );
 
     let mut file_menu = Menu::new()
-        .add_item(CustomMenuItem::new("file_open_project", "Open Project"))
+        .add_item(
+            CustomMenuItem::new("file_open_project", "Open Project").accelerator("CmdOrCtrl+O"),
+        )
         .add_submenu(Submenu::new(
             "Export",
-            Menu::new().add_item(CustomMenuItem::new("file_export_pdf", "Export PDF")),
+            Menu::new().add_item(
+                CustomMenuItem::new("file_export_pdf", "Export PDF").accelerator("CmdOrCtrl+E"),
+            ),
         ));
 
     #[cfg(not(target_os = "macos"))]
@@ -70,10 +77,7 @@ fn build_menu() -> Menu {
         file_menu = file_menu.add_native_item(MenuItem::Quit);
     }
 
-    let file_submenu = Submenu::new(
-        "File",
-        file_menu,
-    );
+    let file_submenu = Submenu::new("File", file_menu);
     let edit_submenu = Submenu::new("Edit", Menu::new());
     let view_submenu = Submenu::new(
         "View",
