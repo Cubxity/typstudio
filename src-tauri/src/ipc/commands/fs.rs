@@ -122,7 +122,13 @@ pub async fn fs_list_dir<R: Runtime>(
                 } else {
                     FileType::File
                 };
-                files.push(FileItem { name, file_type: t });
+
+                // These files are irrelevant to most text editing applications, and most of them
+                // filter these out too.
+                let should_ignore = name == ".DS_Store" || name == ".localized";
+                if !should_ignore {
+                    files.push(FileItem { name, file_type: t });
+                }
             }
         }
     });
