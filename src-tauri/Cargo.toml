@@ -36,10 +36,11 @@ log = "0.4"
 env_logger = "0.10"
 dirs = "5.0"
 walkdir = "2.3"
-memmap2 = "0.7"
+memmap2 = "0.9"
 
-typst = { git = "https://github.com/typst/typst", tag = "v0.8.0" }
-typst-library = { git = "https://github.com/typst/typst", tag = "v0.8.0" }
+typst = { git = "https://github.com/typst/typst", tag = "v0.9.0" }
+typst-library = { git = "https://github.com/typst/typst", tag = "v0.9.0" }
+typst-ide = { git = "https://github.com/typst/typst", tag = "v0.9.0" }
 comemo = "0.3"
 
 [features]

@@ -18,8 +18,8 @@ use tauri::Runtime;
 use typst::diag::Severity;
 use typst::eval::Tracer;
 use typst::geom::Color;
-use typst::ide::{Completion, CompletionKind};
 use typst::World;
+use typst_ide::{Completion, CompletionKind};
 
 #[derive(Serialize_repr, Debug)]
 #[repr(u8)]
@@ -233,7 +233,7 @@ pub async fn typst_autocomplete<R: Runtime>(
     let source = world.source(source_id).map_err(Into::<Error>::into)?;
 
     let (completed_offset, completions) =
-        typst::ide::autocomplete(&*world, &[], &source, offset, explicit)
+        typst_ide::autocomplete(&*world, &[], &source, offset, explicit)
             .ok_or_else(|| Error::Unknown)?;
 
     let completed_char_offset = content[..completed_offset].chars().count();

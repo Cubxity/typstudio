@@ -53,7 +53,7 @@ impl ProjectWorld {
             match res {
                 Ok(src) => {
                     // TODO: incremental edits
-                    src.replace(content);
+                    src.replace(&content);
                 }
                 Err(_) => {
                     *res = Ok(Source::new(id, content));

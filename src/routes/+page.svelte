@@ -16,7 +16,6 @@
       project.set(payload.project);
     });
   });
-
 </script>
 
 <div class="flex flex-col max-h-screen h-screen bg-[#1e1e1e]">
@@ -32,3 +31,4 @@
   </div>
   <StatusBar />
 </div>
+

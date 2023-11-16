@@ -31,7 +31,7 @@ pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
                     if let Some(project) = project_manager.get_project(window) {
                         let cache = project.cache.read().unwrap();
                         if let Some(doc) = &cache.document {
-                            let pdf = typst::export::pdf(doc);
+                            let pdf = typst::export::pdf(doc, None, None);
                             let _ = fs::write(path, pdf);
                         }
                     }
