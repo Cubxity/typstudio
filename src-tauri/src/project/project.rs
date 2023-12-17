@@ -7,7 +7,7 @@ use std::sync::{Mutex, RwLock};
 use std::{fs, io};
 use thiserror::Error;
 use typst::diag::{FileError, FileResult};
-use typst::doc::Document;
+use typst::model::Document;
 use typst::syntax::VirtualPath;
 
 const PATH_PROJECT_CONFIG_FILE: &str = ".typstudio/project.json";

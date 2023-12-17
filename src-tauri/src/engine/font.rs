@@ -3,7 +3,7 @@ use memmap2::Mmap;
 use once_cell::sync::OnceCell;
 use std::fs::File;
 use std::path::{Path, PathBuf};
-use typst::font::{Font, FontBook, FontInfo};
+use typst::text::{Font, FontBook, FontInfo};
 use walkdir::WalkDir;
 
 // Taken from typst-cli
@@ -46,7 +46,7 @@ impl FontSearcher {
     /// Add fonts that are embedded in the binary.
     #[cfg(feature = "embed-fonts")]
     fn search_embedded(&mut self) {
-        use typst::eval::Bytes;
+        use typst::foundations::Bytes;
 
         let mut search = |bytes: &'static [u8]| {
             for (i, font) in Font::iter(Bytes::from_static(bytes)).enumerate() {

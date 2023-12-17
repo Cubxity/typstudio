@@ -6,6 +6,7 @@ use crate::ipc::{
 };
 use crate::project::ProjectManager;
 use base64::Engine;
+use comemo::Prehashed;
 use log::debug;
 use serde::Serialize;
 use serde_repr::Serialize_repr;
@@ -17,7 +18,7 @@ use std::time::Instant;
 use tauri::Runtime;
 use typst::diag::Severity;
 use typst::eval::Tracer;
-use typst::geom::Color;
+use typst::visualize::Color;
 use typst::World;
 use typst_ide::{Completion, CompletionKind};
 
@@ -101,7 +102,7 @@ pub async fn typst_compile<R: Runtime>(
             let pages = doc.pages.len();
 
             let mut hasher = SipHasher::new();
-            doc.hash(&mut hasher);
+            doc.pages.hash(&mut hasher);
             let hash = hex::encode(hasher.finish128().as_bytes());
 
             // Assume all pages have the same size
@@ -186,7 +187,7 @@ pub async fn typst_render<R: Runtime>(
     let cache = project.cache.read().unwrap();
     if let Some(frame) = cache.document.as_ref().and_then(|doc| doc.pages.get(page)) {
         let now = Instant::now();
-        let bmp = typst::export::render(frame, scale, Color::WHITE);
+        let bmp = typst_render::render(frame, scale, Color::WHITE);
         if let Ok(image) = bmp.encode_png() {
             let elapsed = now.elapsed();
             debug!(
@@ -233,7 +234,7 @@ pub async fn typst_autocomplete<R: Runtime>(
     let source = world.source(source_id).map_err(Into::<Error>::into)?;
 
     let (completed_offset, completions) =
-        typst_ide::autocomplete(&*world, &[], &source, offset, explicit)
+        typst_ide::autocomplete(&*world, None, &source, offset, explicit)
             .ok_or_else(|| Error::Unknown)?;
 
     let completed_char_offset = content[..completed_offset].chars().count();
