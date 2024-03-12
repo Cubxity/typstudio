@@ -6,7 +6,6 @@ use crate::ipc::{
 };
 use crate::project::ProjectManager;
 use base64::Engine;
-use comemo::Prehashed;
 use log::debug;
 use serde::Serialize;
 use serde_repr::Serialize_repr;

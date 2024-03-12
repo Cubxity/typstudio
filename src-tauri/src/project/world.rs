@@ -195,7 +195,7 @@ impl World for ProjectWorld {
     fn today(&self, offset: Option<i64>) -> Option<Datetime> {
         let dt = match offset {
             None => chrono::Local::now().naive_local(),
-            Some(o) => (chrono::Utc::now() + chrono::Duration::hours(o)).naive_utc(),
+            Some(o) => (chrono::Utc::now() + chrono::Duration::try_hours(o)?).naive_utc(),
         };
         Datetime::from_ymd(
             dt.year(),
