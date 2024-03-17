@@ -8,10 +8,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use typst::diag::{FileError, FileResult, PackageError, PackageResult};
-use typst::eval::{Bytes, Datetime, Library};
-use typst::font::{Font, FontBook};
-use typst::syntax::{FileId, PackageSpec, Source, VirtualPath};
-use typst::World;
+use typst::foundations::{Bytes, Datetime};
+use typst::syntax::package::PackageSpec;
+use typst::syntax::{FileId, Source, VirtualPath};
+use typst::text::{Font, FontBook};
+use typst::{Library, World};
 
 pub struct ProjectWorld {
     root: PathBuf,
@@ -53,7 +54,7 @@ impl ProjectWorld {
             match res {
                 Ok(src) => {
                     // TODO: incremental edits
-                    src.replace(content);
+                    src.replace(&content);
                 }
                 Err(_) => {
                     *res = Ok(Source::new(id, content));
@@ -195,7 +196,7 @@ impl World for ProjectWorld {
     fn today(&self, offset: Option<i64>) -> Option<Datetime> {
         let dt = match offset {
             None => chrono::Local::now().naive_local(),
-            Some(o) => (chrono::Utc::now() + chrono::Duration::hours(o)).naive_utc(),
+            Some(o) => (chrono::Utc::now() + chrono::Duration::try_hours(o)?).naive_utc(),
         };
         Datetime::from_ymd(
             dt.year(),

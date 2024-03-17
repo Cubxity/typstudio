@@ -17,9 +17,9 @@ use std::time::Instant;
 use tauri::Runtime;
 use typst::diag::Severity;
 use typst::eval::Tracer;
-use typst::geom::Color;
-use typst::ide::{Completion, CompletionKind};
+use typst::visualize::Color;
 use typst::World;
+use typst_ide::{Completion, CompletionKind};
 
 #[derive(Serialize_repr, Debug)]
 #[repr(u8)]
@@ -101,14 +101,16 @@ pub async fn typst_compile<R: Runtime>(
             let pages = doc.pages.len();
 
             let mut hasher = SipHasher::new();
-            doc.hash(&mut hasher);
+            for page in &doc.pages {
+                page.frame.hash(&mut hasher);
+            }
             let hash = hex::encode(hasher.finish128().as_bytes());
 
             // Assume all pages have the same size
             // TODO: Improve this?
             let first_page = &doc.pages[0];
-            let width = first_page.width();
-            let height = first_page.height();
+            let width = first_page.frame.width();
+            let height = first_page.frame.height();
 
             project.cache.write().unwrap().document = Some(doc);
 
@@ -184,9 +186,9 @@ pub async fn typst_render<R: Runtime>(
         .ok_or(Error::UnknownProject)?;
 
     let cache = project.cache.read().unwrap();
-    if let Some(frame) = cache.document.as_ref().and_then(|doc| doc.pages.get(page)) {
+    if let Some(p) = cache.document.as_ref().and_then(|doc| doc.pages.get(page)) {
         let now = Instant::now();
-        let bmp = typst::export::render(frame, scale, Color::WHITE);
+        let bmp = typst_render::render(&p.frame, scale, Color::WHITE);
         if let Ok(image) = bmp.encode_png() {
             let elapsed = now.elapsed();
             debug!(
@@ -233,7 +235,7 @@ pub async fn typst_autocomplete<R: Runtime>(
     let source = world.source(source_id).map_err(Into::<Error>::into)?;
 
     let (completed_offset, completions) =
-        typst::ide::autocomplete(&*world, &[], &source, offset, explicit)
+        typst_ide::autocomplete(&*world, None, &source, offset, explicit)
             .ok_or_else(|| Error::Unknown)?;
 
     let completed_char_offset = content[..completed_offset].chars().count();
