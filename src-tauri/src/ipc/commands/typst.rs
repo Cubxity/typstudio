@@ -17,6 +17,7 @@ use std::time::Instant;
 use tauri::Runtime;
 use typst::diag::Severity;
 use typst::eval::Tracer;
+use typst::layout::Frame;
 use typst::visualize::Color;
 use typst::World;
 use typst_ide::{Completion, CompletionKind};
@@ -101,14 +102,17 @@ pub async fn typst_compile<R: Runtime>(
             let pages = doc.pages.len();
 
             let mut hasher = SipHasher::new();
-            doc.pages.hash(&mut hasher);
+            {
+                let frames: Vec<&Frame> = doc.pages.iter().map(|page| &page.frame).collect();
+                frames.hash(&mut hasher);
+            }
             let hash = hex::encode(hasher.finish128().as_bytes());
 
             // Assume all pages have the same size
             // TODO: Improve this?
             let first_page = &doc.pages[0];
-            let width = first_page.width();
-            let height = first_page.height();
+            let width = first_page.frame.width();
+            let height = first_page.frame.height();
 
             project.cache.write().unwrap().document = Some(doc);
 
@@ -184,9 +188,9 @@ pub async fn typst_render<R: Runtime>(
         .ok_or(Error::UnknownProject)?;
 
     let cache = project.cache.read().unwrap();
-    if let Some(frame) = cache.document.as_ref().and_then(|doc| doc.pages.get(page)) {
+    if let Some(p) = cache.document.as_ref().and_then(|doc| doc.pages.get(page)) {
         let now = Instant::now();
-        let bmp = typst_render::render(frame, scale, Color::WHITE);
+        let bmp = typst_render::render(&p.frame, scale, Color::WHITE);
         if let Ok(image) = bmp.encode_png() {
             let elapsed = now.elapsed();
             debug!(

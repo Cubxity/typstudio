@@ -562,19 +562,21 @@ dependencies = [
 
 [[package]]
 name = "comemo"
-version = "0.3.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf5705468fa80602ee6a5f9318306e6c428bffd53e43209a78bc05e6e667c6f4"
+checksum = "df6916408a724339aa77b18214233355f3eb04c42eb895e5f8909215bd8a7a91"
 dependencies = [
  "comemo-macros",
+ "once_cell",
+ "parking_lot",
  "siphasher 1.0.0",
 ]
 
 [[package]]
 name = "comemo-macros"
-version = "0.3.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54af6ac68ada2d161fa9cc1ab52676228e340866d094d6542107e74b82acc095"
+checksum = "c8936e42f9b4f5bdfaf23700609ac1f11cb03ad4c1ec128a4ee4fd0903e228db"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1157,12 +1159,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
-name = "fontdb"
-version = "0.15.0"
+name = "fontconfig-parser"
+version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "020e203f177c0fb250fb19455a252e838d2bbbce1f80f25ecc42402aafa8cd38"
+checksum = "6a595cb550439a117696039dfc69830492058211b771a2a165379f2a1a53d84d"
 dependencies = [
+ "roxmltree",
+]
+
+[[package]]
+name = "fontdb"
+version = "0.16.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0299020c3ef3f60f526a4f64ab4a3d4ce116b1acbf24cdd22da0068e5d81dc3"
+dependencies = [
+ "fontconfig-parser",
  "log",
+ "memmap2",
  "slotmap",
  "tinyvec",
  "ttf-parser",
@@ -2140,6 +2153,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "kamadak-exif"
+version = "0.5.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef4fc70d0ab7e5b6bafa30216a6b48705ea964cdfc29c050f2412295eba58077"
+dependencies = [
+ "mutate_once",
+]
+
+[[package]]
 name = "kqueue"
 version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2370,6 +2392,12 @@ dependencies = [
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.48.0",
 ]
+
+[[package]]
+name = "mutate_once"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16cf681a23b4d0a43fc35024c176437f9dcd818db34e0f42ab456a0ee5ad497b"
 
 [[package]]
 name = "ndk"
@@ -2827,9 +2855,9 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pixglyph"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f67591f21f6668e63c1cd85adab066ac8a92bc7b962668dd8042197a6e4b8f8f"
+checksum = "e2e0f8ad4c197db38125b880c3c44544788665c7d5f4c42f5a35da44bca1a712"
 dependencies = [
  "ttf-parser",
 ]
@@ -2866,6 +2894,12 @@ dependencies = [
  "flate2",
  "miniz_oxide",
 ]
+
+[[package]]
+name = "portable-atomic"
+version = "1.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7170ef9988bc169ba16dd36a7fa041e5c4cbeb6a35b76d4c03daded371eae7c0"
 
 [[package]]
 name = "postcard"
@@ -2953,6 +2987,12 @@ checksum = "5787f7cda34e3033a72192c018bc5883100330f362ef279a8cbccfce8bb4e874"
 dependencies = [
  "cc",
 ]
+
+[[package]]
+name = "qcms"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edecfcd5d755a5e5d98e24cf43113e7cdaec5a070edd0f6b250c03a573da30fa"
 
 [[package]]
 name = "quick-xml"
@@ -3081,12 +3121,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rctree"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b42e27ef78c35d3998403c1d26f3efd9e135d3e5121b0a4845cc5cc27547f4f"
-
-[[package]]
 name = "redox_syscall"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3152,9 +3186,9 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 
 [[package]]
 name = "resvg"
-version = "0.36.0"
+version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc7980f653f9a7db31acff916a262c3b78c562919263edea29bf41a056e20497"
+checksum = "5c34501046959e06470ba62a2dc7f31c15f94ac250d842a45f9e012f4ee40c1e"
 dependencies = [
  "gif 0.12.0",
  "jpeg-decoder",
@@ -3202,12 +3236,9 @@ dependencies = [
 
 [[package]]
 name = "roxmltree"
-version = "0.18.1"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "862340e351ce1b271a378ec53f304a5558f7db87f3769dc655a8f6ecbb68b302"
-dependencies = [
- "xmlparser",
-]
+checksum = "3cd14fd5e3b777a7422cca79358c57a8f6e3a703d9ac187448d0daf220c2407f"
 
 [[package]]
 name = "rustc-demangle"
@@ -3245,11 +3276,11 @@ checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
 
 [[package]]
 name = "rustybuzz"
-version = "0.10.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71cd15fef9112a1f94ac64b58d1e4628192631ad6af4dc69997f995459c874e7"
+checksum = "f0ae5692c5beaad6a9e22830deeed7874eae8a4e3ba4076fb48e12c56856222c"
 dependencies = [
- "bitflags 1.3.2",
+ "bitflags 2.4.2",
  "bytemuck",
  "smallvec",
  "ttf-parser",
@@ -3652,22 +3683,24 @@ checksum = "09eab8a83bff89ba2200bd4c59be45c7c787f988431b936099a5a266c957f2f9"
 
 [[package]]
 name = "svg2pdf"
-version = "0.9.1"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a81da66842e426278f20062cd249779565e13f9ab4bfe0ac9e94eb476bc3a0f3"
+checksum = "ba36b330062be8497fd96597227a757b621b86c4d24d164b06e4522b52b3693e"
 dependencies = [
  "image",
  "miniz_oxide",
  "once_cell",
  "pdf-writer",
+ "resvg",
+ "tiny-skia",
  "usvg",
 ]
 
 [[package]]
 name = "svgtypes"
-version = "0.12.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d71499ff2d42f59d26edb21369a308ede691421f79ebc0f001e2b1fd3a7c9e52"
+checksum = "6e44e288cd960318917cbd540340968b90becc8bc81f171345d706e7a89d9d70"
 dependencies = [
  "kurbo",
  "siphasher 0.3.11",
@@ -4332,9 +4365,20 @@ dependencies = [
 
 [[package]]
 name = "ttf-parser"
-version = "0.19.2"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49d64318d8311fc2668e48b63969f4343e0a85c4a109aa8460d6672e364b8bd1"
+checksum = "17f77d76d837a7830fe1d4f12b7b4ba4192c1888001c7164257e4bc6d21d96b4"
+
+[[package]]
+name = "two-face"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37bed2135b2459c7eefba72c906d374697eb15949c205f2f124e3636a46b5eeb"
+dependencies = [
+ "once_cell",
+ "serde",
+ "syntect",
+]
 
 [[package]]
 name = "typed-arena"
@@ -4350,8 +4394,8 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "typst"
-version = "0.10.0"
-source = "git+https://github.com/typst/typst?tag=v0.10.0#70ca0d257bb4ba927f63260e20443f244e0bb58c"
+version = "0.11.0"
+source = "git+https://github.com/typst/typst?tag=v0.11.0#2bf9f95dd83f2ceef1e32ae1847a162c7d193f76"
 dependencies = [
  "az",
  "bitflags 2.4.2",
@@ -4368,13 +4412,19 @@ dependencies = [
  "icu_provider_adapters",
  "icu_provider_blob",
  "icu_segmenter",
+ "if_chain",
  "image",
  "indexmap 2.2.5",
+ "kamadak-exif",
  "kurbo",
  "lipsum",
  "log",
  "once_cell",
  "palette",
+ "phf 0.11.2",
+ "png",
+ "portable-atomic",
+ "qcms",
  "rayon",
  "regex",
  "roxmltree",
@@ -4388,11 +4438,13 @@ dependencies = [
  "syntect",
  "time",
  "toml 0.8.11",
- "tracing",
  "ttf-parser",
+ "two-face",
  "typed-arena",
+ "typst-assets",
  "typst-macros",
  "typst-syntax",
+ "typst-timing",
  "unicode-bidi",
  "unicode-math-class",
  "unicode-script",
@@ -4402,9 +4454,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "typst-assets"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f13f85360328da54847dd7fefaf272dfa5b6d1fdeb53f32938924c39bf5b2c6c"
+
+[[package]]
 name = "typst-ide"
-version = "0.10.0"
-source = "git+https://github.com/typst/typst?tag=v0.10.0#70ca0d257bb4ba927f63260e20443f244e0bb58c"
+version = "0.11.0"
+source = "git+https://github.com/typst/typst?tag=v0.11.0#2bf9f95dd83f2ceef1e32ae1847a162c7d193f76"
 dependencies = [
  "comemo",
  "ecow",
@@ -4417,8 +4475,8 @@ dependencies = [
 
 [[package]]
 name = "typst-macros"
-version = "0.10.0"
-source = "git+https://github.com/typst/typst?tag=v0.10.0#70ca0d257bb4ba927f63260e20443f244e0bb58c"
+version = "0.11.0"
+source = "git+https://github.com/typst/typst?tag=v0.11.0#2bf9f95dd83f2ceef1e32ae1847a162c7d193f76"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
@@ -4428,10 +4486,10 @@ dependencies = [
 
 [[package]]
 name = "typst-pdf"
-version = "0.10.0"
-source = "git+https://github.com/typst/typst?tag=v0.10.0#70ca0d257bb4ba927f63260e20443f244e0bb58c"
+version = "0.11.0"
+source = "git+https://github.com/typst/typst?tag=v0.11.0#2bf9f95dd83f2ceef1e32ae1847a162c7d193f76"
 dependencies = [
- "base64 0.21.7",
+ "base64 0.22.0",
  "bytemuck",
  "comemo",
  "ecow",
@@ -4441,9 +4499,11 @@ dependencies = [
  "pdf-writer",
  "subsetter",
  "svg2pdf",
- "tracing",
  "ttf-parser",
  "typst",
+ "typst-assets",
+ "typst-macros",
+ "typst-timing",
  "unicode-properties",
  "unscanny",
  "xmp-writer",
@@ -4451,8 +4511,8 @@ dependencies = [
 
 [[package]]
 name = "typst-render"
-version = "0.10.0"
-source = "git+https://github.com/typst/typst?tag=v0.10.0#70ca0d257bb4ba927f63260e20443f244e0bb58c"
+version = "0.11.0"
+source = "git+https://github.com/typst/typst?tag=v0.11.0#2bf9f95dd83f2ceef1e32ae1847a162c7d193f76"
 dependencies = [
  "bytemuck",
  "comemo",
@@ -4464,24 +4524,36 @@ dependencies = [
  "tiny-skia",
  "ttf-parser",
  "typst",
+ "typst-macros",
+ "typst-timing",
  "usvg",
 ]
 
 [[package]]
 name = "typst-syntax"
-version = "0.10.0"
-source = "git+https://github.com/typst/typst?tag=v0.10.0#70ca0d257bb4ba927f63260e20443f244e0bb58c"
+version = "0.11.0"
+source = "git+https://github.com/typst/typst?tag=v0.11.0#2bf9f95dd83f2ceef1e32ae1847a162c7d193f76"
 dependencies = [
  "comemo",
  "ecow",
  "once_cell",
  "serde",
- "tracing",
  "unicode-ident",
  "unicode-math-class",
  "unicode-script",
  "unicode-segmentation",
  "unscanny",
+]
+
+[[package]]
+name = "typst-timing"
+version = "0.11.0"
+source = "git+https://github.com/typst/typst?tag=v0.11.0#2bf9f95dd83f2ceef1e32ae1847a162c7d193f76"
+dependencies = [
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "typst-syntax",
 ]
 
 [[package]]
@@ -4626,9 +4698,9 @@ dependencies = [
 
 [[package]]
 name = "usvg"
-version = "0.36.0"
+version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c51daa774fe9ee5efcf7b4fec13019b8119cda764d9a8b5b06df02bb1445c656"
+checksum = "377f62b4a3c173de8654c1aa80ab1dac1154e6f13a779a9943e53780120d1625"
 dependencies = [
  "base64 0.21.7",
  "log",
@@ -4641,9 +4713,9 @@ dependencies = [
 
 [[package]]
 name = "usvg-parser"
-version = "0.36.0"
+version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45c88a5ffaa338f0e978ecf3d4e00d8f9f493e29bed0752e1a808a1db16afc40"
+checksum = "351a05e6f2023d6b4e946f734240a3927aefdcf930d7d42587a2c8a8869814b0"
 dependencies = [
  "data-url",
  "flate2",
@@ -4659,9 +4731,9 @@ dependencies = [
 
 [[package]]
 name = "usvg-text-layout"
-version = "0.36.0"
+version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d2374378cb7a3fb8f33894e0fdb8625e1bbc4f25312db8d91f862130b541593"
+checksum = "8c41888b9d5cf431fe852eaf9d047bbde83251b98f1749c2f08b1071e6db46e2"
 dependencies = [
  "fontdb",
  "kurbo",
@@ -4675,11 +4747,10 @@ dependencies = [
 
 [[package]]
 name = "usvg-tree"
-version = "0.36.0"
+version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6cacb0c5edeaf3e80e5afcf5b0d4004cc1d36318befc9a7c6606507e5d0f4062"
+checksum = "18863e0404ed153d6e56362c5b1146db9f4f262a3244e3cf2dbe7d8a85909f05"
 dependencies = [
- "rctree",
  "strict-num",
  "svgtypes",
  "tiny-skia-path",
@@ -5414,12 +5485,6 @@ dependencies = [
  "linux-raw-sys",
  "rustix",
 ]
-
-[[package]]
-name = "xmlparser"
-version = "0.13.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66fee0b777b0f5ac1c69bb06d361268faafa61cd4682ae064a171c16c433e9e4"
 
 [[package]]
 name = "xmlwriter"

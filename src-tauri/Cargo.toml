@@ -38,11 +38,11 @@ dirs = "5.0"
 walkdir = "2.5"
 memmap2 = "0.9"
 
-typst = { git = "https://github.com/typst/typst", tag = "v0.10.0" }
-typst-ide = { git = "https://github.com/typst/typst", tag = "v0.10.0" }
-typst-pdf = { git = "https://github.com/typst/typst", tag = "v0.10.0" }
-typst-render = { git = "https://github.com/typst/typst", tag = "v0.10.0" }
-comemo = "0.3.1"
+typst = { git = "https://github.com/typst/typst", tag = "v0.11.0" }
+typst-ide = { git = "https://github.com/typst/typst", tag = "v0.11.0" }
+typst-pdf = { git = "https://github.com/typst/typst", tag = "v0.11.0" }
+typst-render = { git = "https://github.com/typst/typst", tag = "v0.11.0" }
+comemo = "0.4.0"
 
 [features]
 # by default Tauri runs in production mode

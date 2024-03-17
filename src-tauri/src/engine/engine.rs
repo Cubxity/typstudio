@@ -15,7 +15,7 @@ impl TypstEngine {
         searcher.search(&[]);
 
         Self {
-            library: Prehashed::new(Library::build()),
+            library: Prehashed::new(Library::default()),
             fontbook: Prehashed::new(searcher.book),
             fonts: searcher.fonts,
         }

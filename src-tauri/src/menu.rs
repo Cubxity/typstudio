@@ -4,6 +4,7 @@ use std::fs;
 use std::sync::Arc;
 use tauri::api::dialog::FileDialogBuilder;
 use tauri::{Manager, Runtime, State, WindowMenuEvent};
+use typst::foundations::Smart;
 
 pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
     match e.menu_item_id() {
@@ -31,7 +32,7 @@ pub fn handle_menu_event<R: Runtime>(e: WindowMenuEvent<R>) {
                     if let Some(project) = project_manager.get_project(window) {
                         let cache = project.cache.read().unwrap();
                         if let Some(doc) = &cache.document {
-                            let pdf = typst_pdf::pdf(doc, None, None);
+                            let pdf = typst_pdf::pdf(doc, Smart::Auto, None);
                             let _ = fs::write(path, pdf);
                         }
                     }

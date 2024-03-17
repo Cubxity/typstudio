@@ -9,7 +9,8 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use typst::diag::{FileError, FileResult, PackageError, PackageResult};
 use typst::foundations::{Bytes, Datetime};
-use typst::syntax::{FileId, PackageSpec, Source, VirtualPath};
+use typst::syntax::package::PackageSpec;
+use typst::syntax::{FileId, Source, VirtualPath};
 use typst::text::{Font, FontBook};
 use typst::{Library, World};
 
