@@ -17,7 +17,6 @@ use std::time::Instant;
 use tauri::Runtime;
 use typst::diag::Severity;
 use typst::eval::Tracer;
-use typst::layout::Frame;
 use typst::visualize::Color;
 use typst::World;
 use typst_ide::{Completion, CompletionKind};
@@ -102,9 +101,8 @@ pub async fn typst_compile<R: Runtime>(
             let pages = doc.pages.len();
 
             let mut hasher = SipHasher::new();
-            {
-                let frames: Vec<&Frame> = doc.pages.iter().map(|page| &page.frame).collect();
-                frames.hash(&mut hasher);
+            for page in &doc.pages {
+                page.frame.hash(&mut hasher);
             }
             let hash = hex::encode(hasher.finish128().as_bytes());
 
