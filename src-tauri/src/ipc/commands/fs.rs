@@ -25,6 +25,9 @@ pub enum FileType {
     Directory,
 }
 
+/// Files to be excluded from directory listings.
+const EXCLUDED_FILES: &[&str] = &[".DS_Store", ".localized"];
+
 /// Reads raw bytes from a specified path.
 /// Note that this command is slow compared to the text API due to Wry's
 /// messaging system in v1. See: https://github.com/tauri-apps/tauri/issues/1817
@@ -122,7 +125,12 @@ pub async fn fs_list_dir<R: Runtime>(
                 } else {
                     FileType::File
                 };
-                files.push(FileItem { name, file_type: t });
+
+                // These files are irrelevant to most text editing applications, and most of them
+                // filter these out too.
+                if !EXCLUDED_FILES.contains(&name.as_str()) {
+                    files.push(FileItem { name, file_type: t });
+                }
             }
         }
     });
