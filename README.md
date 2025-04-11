@@ -1,5 +1,10 @@
 # [WIP] typstudio
 
+> [!NOTE]
+> Typstudio is not actively maintained. I have not had time to actively maintain this project for the last year. The project will most likely be archived at some point in the foreseeable future.
+>
+> For those who are looking for an offline alternative, I recommend [Tinymist](https://github.com/Myriad-Dreamin/tinymist).
+
 A W.I.P desktop application for a new markup-based typesetting language, [typst](https://github.com/typst/typst).
 Typstudio is built using [Tauri](https://tauri.app/).
 
